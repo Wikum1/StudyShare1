@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   getPlans,
   createPlan,
@@ -6,316 +6,307 @@ import {
   updateTask,
   deletePlan,
   deleteTask,
-  updatePlan,
 } from "../services/studyPlanService";
 
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
-import { motion } from "framer-motion";
-
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-} from "recharts";
-
 import "./StudyPlanner.css";
+
+// ✅ Parse "YYYY-MM-DD" safely without timezone shift
+function parseDateLocal(dateStr) {
+  if (!dateStr) return null;
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+// ✅ Get day abbreviation from a local-parsed date
+function getDayAbbr(dateStr) {
+  const d = parseDateLocal(dateStr);
+  if (!d) return null;
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+}
+
+// ✅ Extract hour string "08" from time like "08:00" or "8:00"
+function getHourStr(timeStr) {
+  if (!timeStr) return null;
+  return timeStr.split(":")[0].padStart(2, "0");
+}
 
 export default function StudyPlanner() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   const [title, setTitle] = useState("");
-  const [search, setSearch] = useState("");
   const [taskInput, setTaskInput] = useState("");
   const [taskDate, setTaskDate] = useState("");
+  const [taskTime, setTaskTime] = useState("");
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const fetchPlans = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await getPlans();
+      setPlans(res.data);
+
+      if (res.data.length > 0) {
+        setSelectedPlan((prev) => {
+          if (prev) {
+            const updatedPlan = res.data.find((p) => p._id === prev._id);
+            return updatedPlan || res.data[0];
+          }
+          return res.data[0];
+        });
+      }
+    } catch (err) {
+      setError("Failed to load plans: " + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+  }, [fetchPlans]);
 
-  // 📊 Progress
-  const getProgress = (plan) => {
-    if (!plan?.tasks?.length) return 0;
-    const completed = plan.tasks.filter(
-      (t) => t.status === "completed"
-    ).length;
-    return Math.round((completed / plan.tasks.length) * 100);
-  };
-
-  // 📅 Highlight calendar dates
-  const hasTaskOnDate = (date) => {
-    if (!selectedPlan) return false;
-
-    return selectedPlan.tasks.some((task) => {
-      if (!task.date) return false;
-
-      return (
-        new Date(task.date).toDateString() ===
-        new Date(date).toDateString()
-      );
-    });
-  };
-
-  const fetchPlans = async () => {
-    const res = await getPlans();
-    setPlans(res.data);
-
-    if (selectedPlan) {
-      const updated = res.data.find(
-        (p) => p._id === selectedPlan._id
-      );
-      setSelectedPlan(updated || null);
-    }
-
-    if (!selectedPlan && res.data.length > 0) {
-      setSelectedPlan(res.data[0]);
-    }
-  };
-
-  // ➕ Create
-  const handleCreatePlan = async () => {
-    if (!title) return;
-    const res = await createPlan({ title });
-    setTitle("");
-    setSelectedPlan(res.data);
-    fetchPlans();
-  };
-
-  // ➕ Add task
-  const handleAddTask = async () => {
-    if (!taskInput || !selectedPlan) return;
-
-    await addTask(selectedPlan._id, {
-      title: taskInput,
-      date: taskDate || null,
-    });
-
-    setTaskInput("");
-    setTaskDate("");
-    fetchPlans();
-  };
-
-  // Toggle
-  const handleToggle = async (task) => {
-    await updateTask(selectedPlan._id, task._id, {
-      status: task.status === "pending" ? "completed" : "pending",
-    });
-    fetchPlans();
-  };
-
-  // Delete plan
-  const handleDeletePlan = async (id) => {
-    if (!window.confirm("Delete this plan?")) return;
-    await deletePlan(id);
-    setSelectedPlan(null);
-    fetchPlans();
-  };
-
-  // Delete task
-  const handleDeleteTask = async (taskId) => {
-    await deleteTask(selectedPlan._id, taskId);
-    fetchPlans();
-  };
-
-  // Edit plan
-  const handleEditPlan = async () => {
-    const newTitle = prompt("Edit name:", selectedPlan.title);
-    if (!newTitle) return;
-
-    await updatePlan(selectedPlan._id, { title: newTitle });
-    fetchPlans();
-  };
-
-  // Filter plans
-  const filteredPlans = plans.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Filter tasks by date
-  const filteredTasks =
-    selectedPlan?.tasks?.filter((task) => {
-      if (!task.date) return false;
-
-      return (
-        new Date(task.date).toDateString() ===
-        new Date(selectedDate).toDateString()
-      );
-    }) || [];
-
-  // Chart data
-  const completed = plans.reduce(
-    (a, p) => a + p.tasks.filter(t => t.status === "completed").length,
-    0
-  );
-
-  const pending = plans.reduce(
-    (a, p) => a + p.tasks.filter(t => t.status === "pending").length,
-    0
-  );
-
-  const chartData = [
-    { name: "Completed", value: completed },
-    { name: "Pending", value: pending },
+  const timeSlots = [
+    "08:00", "09:00", "10:00", "11:00",
+    "12:00", "13:00", "14:00", "15:00",
+    "16:00", "17:00", "18:00",
   ];
 
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  // ✅ FIXED: uses local date parsing + simple hour comparison
+  const getTask = (day, time) => {
+    if (!selectedPlan?.tasks) return null;
+
+    const slotHour = getHourStr(time);
+
+    return selectedPlan.tasks.find((t) => {
+      const taskDay = getDayAbbr(t.date);
+      const taskHour = getHourStr(t.time);
+      return taskDay === day && taskHour === slotHour;
+    });
+  };
+
+  const handleCreatePlan = async () => {
+    if (!title.trim()) {
+      setError("Please enter a plan title");
+      return;
+    }
+    try {
+      setError("");
+      await createPlan({ title });
+      setTitle("");
+      await fetchPlans();
+    } catch (err) {
+      setError("Failed to create plan: " + err.message);
+      console.error(err);
+    }
+  };
+
+  const handleAddTask = async () => {
+    if (!taskInput.trim() || !selectedPlan || !taskDate || !taskTime) {
+      setError("Please fill in all task fields and select a plan");
+      return;
+    }
+
+    try {
+      setError("");
+      await addTask(selectedPlan._id, {
+        title: taskInput,
+        date: taskDate,   // "YYYY-MM-DD"
+        time: taskTime,   // "HH:MM"
+      });
+
+      setTaskInput("");
+      setTaskDate("");
+      setTaskTime("");
+      await fetchPlans();
+    } catch (err) {
+      setError("Failed to add task: " + err.message);
+      console.error(err);
+    }
+  };
+
+  const handleToggle = async (task) => {
+    try {
+      setError("");
+      await updateTask(selectedPlan._id, task._id, {
+        status: task.status === "pending" ? "completed" : "pending",
+      });
+      await fetchPlans();
+    } catch (err) {
+      setError("Failed to update task: " + err.message);
+      console.error(err);
+    }
+  };
+
+  const handleDeletePlan = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this plan?")) return;
+    try {
+      setError("");
+      await deletePlan(id);
+      setSelectedPlan(null);
+      await fetchPlans();
+    } catch (err) {
+      setError("Failed to delete plan: " + err.message);
+      console.error(err);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      setError("");
+      await deleteTask(selectedPlan._id, taskId);
+      await fetchPlans();
+    } catch (err) {
+      setError("Failed to delete task: " + err.message);
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="planner-layout">
+    <div className="planner-container">
 
-      {/* SIDEBAR */}
-      <div className="sidebar">
-        <h3>📚 Plans</h3>
-
-        <input
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <ul>
-          {filteredPlans.map((plan) => (
-            <li
-              key={plan._id}
-              className={selectedPlan?._id === plan._id ? "active" : ""}
-              onClick={() => setSelectedPlan(plan)}
-            >
-              <span>
-                {plan.title}
-                <small>{getProgress(plan)}%</small>
-              </span>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeletePlan(plan._id);
-                }}
-              >
-                🗑
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* MAIN */}
-      <div className="main">
-
-        {/* DASHBOARD */}
-        <div className="dashboard">
-
-          <motion.div className="card" whileHover={{ scale: 1.05 }}>
-            <h4>Total Plans</h4>
-            <p>{plans.length}</p>
-          </motion.div>
-
-          <motion.div className="card" whileHover={{ scale: 1.05 }}>
-            <h4>Total Tasks</h4>
-            <p>{plans.reduce((a, p) => a + p.tasks.length, 0)}</p>
-          </motion.div>
-
-          <motion.div className="card" whileHover={{ scale: 1.05 }}>
-            <h4>Completed</h4>
-            <p>{completed}</p>
-          </motion.div>
-
-          <motion.div className="card" whileHover={{ scale: 1.05 }}>
-            <h4>Chart</h4>
-            <PieChart width={200} height={200}>
-              <Pie data={chartData} dataKey="value" outerRadius={70}>
-                <Cell fill="#22c55e" />
-                <Cell fill="#ef4444" />
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </motion.div>
-
+      {/* ERROR MESSAGE */}
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+          <button onClick={() => setError("")}>✕</button>
         </div>
+      )}
 
-        {/* CREATE */}
-        <div className="create-plan">
-          <input
-            placeholder="New plan..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <button onClick={handleCreatePlan}>+ Create</button>
-        </div>
+      <div className="planner-flex">
+        {/* SIDEBAR */}
+        <div className="sidebar">
+          <h3>📚 Plans</h3>
 
-        {/* CALENDAR */}
-        <div className="calendar-section">
-          <Calendar
-            value={selectedDate}
-            onChange={setSelectedDate}
-            tileClassName={({ date }) =>
-              hasTaskOnDate(date) ? "highlight" : null
-            }
-          />
-        </div>
-
-        {/* PLAN */}
-        {selectedPlan && (
-          <div className="plan-view">
-
-            <div className="plan-header">
-              <h2>{selectedPlan.title}</h2>
-              <button onClick={handleEditPlan}>✏️</button>
-            </div>
-
-            <div className="progress-bar">
+          {loading && plans.length === 0 ? (
+            <div style={{ padding: "10px", color: "#999" }}>Loading plans...</div>
+          ) : plans.length === 0 ? (
+            <div style={{ padding: "10px", color: "#999" }}>No plans yet</div>
+          ) : (
+            plans.map((plan) => (
               <div
-                className="progress-fill"
-                style={{ width: `${getProgress(selectedPlan)}%` }}
-              />
-            </div>
-
-            <ul>
-              {filteredTasks.map((task) => (
-                <motion.li
-                  key={task._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                key={plan._id}
+                className={`plan-item ${selectedPlan?._id === plan._id ? "active" : ""}`}
+                onClick={() => setSelectedPlan(plan)}
+              >
+                <span>{plan.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletePlan(plan._id);
+                  }}
                 >
-                  <span className={task.status === "completed" ? "completed" : ""}>
-                    {task.title}
-                  </span>
+                  🗑
+                </button>
+              </div>
+            ))
+          )}
 
-                  <div>
-                    <button onClick={() => handleToggle(task)}>
-                      {task.status === "completed" ? "Undo" : "Done"}
-                    </button>
-
-                    <button onClick={() => handleDeleteTask(task._id)}>
-                      🗑
-                    </button>
-                  </div>
-                </motion.li>
-              ))}
-            </ul>
-
-            <div className="add-task">
-              <input
-                placeholder="Task..."
-                value={taskInput}
-                onChange={(e) => setTaskInput(e.target.value)}
-              />
-
-              <input
-                type="date"
-                value={taskDate}
-                onChange={(e) => setTaskDate(e.target.value)}
-              />
-
-              <button onClick={handleAddTask}>Add</button>
-            </div>
-
+          <div className="create-plan">
+            <input
+              placeholder="New plan..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreatePlan()}
+            />
+            <button onClick={handleCreatePlan} disabled={loading}>+ Add</button>
           </div>
-        )}
+        </div>
 
+        {/* MAIN TIMETABLE */}
+        <div className="timetable">
+
+          {/* TASK INPUT */}
+          <div className="task-input top">
+            <input
+              placeholder="Task title..."
+              value={taskInput}
+              onChange={(e) => setTaskInput(e.target.value)}
+            />
+            <input
+              type="date"
+              value={taskDate}
+              onChange={(e) => setTaskDate(e.target.value)}
+            />
+            <input
+              type="time"
+              value={taskTime}
+              onChange={(e) => setTaskTime(e.target.value)}
+            />
+            <button
+              onClick={handleAddTask}
+              disabled={!taskInput.trim() || !taskDate || !taskTime || !selectedPlan || loading}
+              title={!selectedPlan ? "Select a plan first" : ""}
+            >
+              {loading ? "Adding..." : "Add Task"}
+            </button>
+          </div>
+
+          {/* SELECTED PLAN NAME */}
+          {selectedPlan ? (
+            <div className="plan-title-bar">
+              📖 {selectedPlan.title}
+            </div>
+          ) : (
+            <div className="plan-title-bar" style={{ opacity: 0.5 }}>
+              📖 No plan selected
+            </div>
+          )}
+
+          {/* GRID HEADER */}
+          <div className="table-header">
+            <div className="time-col"></div>
+            {days.map((d) => (
+              <div key={d} className="day-col">{d}</div>
+            ))}
+          </div>
+
+          {/* GRID ROWS */}
+          {timeSlots.map((time) => (
+            <div key={time} className="table-row">
+              <div className="time-col">{time}</div>
+              {days.map((day) => {
+                const task = selectedPlan ? getTask(day, time) : null;
+                return (
+                  <div key={day} className={`cell ${task ? "has-task" : ""}`}>
+                    {task && (
+                      <div className={`task-box ${task.status === "completed" ? "done" : ""}`}>
+                        <span>{task.title}</span>
+                        <div className="task-actions">
+                          <button
+                            onClick={() => handleToggle(task)}
+                            title={task.status === "completed" ? "Mark pending" : "Mark complete"}
+                          >
+                            {task.status === "completed" ? "↩" : "✔"}
+                          </button>
+                          <button onClick={() => handleDeleteTask(task._id)}>🗑</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* CALENDAR */}
+      <div className="calendar-box">
+        <Calendar value={selectedDate} onChange={setSelectedDate} />
+      </div>
+
     </div>
   );
 }

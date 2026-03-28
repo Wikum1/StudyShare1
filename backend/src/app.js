@@ -20,7 +20,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 // MongoDB connection
 mongoose
   .connect(
-    "mongodb+srv://student1:8g81fbYGlA0mndvi@cluster0.ux2zfme.mongodb.net/?retryWrites=true&w=majority"
+    "mongodb+srv://student1:8g81fbYGlA0mndvi@cluster0.ux2zfme.mongodb.net/?appName=Cluster0"
   )
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
@@ -30,6 +30,6 @@ app.use("/api/resources", resourceRoutes);
 app.use("/api/admin/resources", adminResourceRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/study-plans", studyPlanRoutes);
+app.use("/api/study-plans", studyPlanRoutes); // ✅ includes nested task routes
 
 module.exports = app;

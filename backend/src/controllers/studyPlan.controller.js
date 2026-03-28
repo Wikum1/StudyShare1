@@ -10,63 +10,60 @@ const createPlan = async (req, res) => {
       subjectCode: req.body.subjectCode || "",
       tasks: [],
     });
-
     res.status(201).json(plan);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 📥 Get Plans
+// 📥 Get All Plans — ✅ populate tasks so frontend gets full task objects
 const getPlans = async (req, res) => {
   try {
-    const plans = await StudyPlan.find();
+    const plans = await StudyPlan.find().populate("tasks");
     res.json(plans);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ➕ Add Task
-const addTask = async (req, res) => {
+// 📥 Get Single Plan — ✅ populate tasks
+const getPlan = async (req, res) => {
   try {
-    const plan = await StudyPlan.findById(req.params.id);
-
-    plan.tasks.push({
-      title: req.body.title,
-      date: req.body.date || null, // 🆕
-    });
-
-    await plan.save();
-
+    const plan = await StudyPlan.findById(req.params.id).populate("tasks");
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
     res.json(plan);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 🔄 Update Task
-const updateTask = async (req, res) => {
+// ✏️ Update Plan
+const updatePlan = async (req, res) => {
   try {
-    const { planId, taskId } = req.params;
-
-    const plan = await StudyPlan.findById(planId);
-
-    const task = plan.tasks.id(taskId);
-
-    task.status = req.body.status;
-
-    await plan.save();
-
+    const plan = await StudyPlan.findByIdAndUpdate(
+      req.params.id,
+      {
+        title: req.body.title,
+        subject: req.body.subject,
+        subjectCode: req.body.subjectCode,
+      },
+      { new: true }
+    ).populate("tasks");
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
     res.json(plan);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = {
-  createPlan,
-  getPlans,
-  addTask,
-  updateTask,
+// 🗑 Delete Plan
+const deletePlan = async (req, res) => {
+  try {
+    await StudyPlan.findByIdAndDelete(req.params.id);
+    res.json({ message: "Plan deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
+
+module.exports = { createPlan, getPlans, getPlan, updatePlan, deletePlan };
