@@ -45,6 +45,7 @@ export default function StudyPlanner() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showCalendar, setShowCalendar] = useState(true);
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -175,7 +176,6 @@ export default function StudyPlanner() {
 
   return (
     <div className="planner-container">
-
       {/* ERROR MESSAGE */}
       {error && (
         <div className="error-banner">
@@ -184,129 +184,182 @@ export default function StudyPlanner() {
         </div>
       )}
 
+      {/* HEADER */}
+      <div className="planner-header">
+        <h1>📅 Study Planner</h1>
+        <p>Organize your study schedule and manage your tasks efficiently</p>
+      </div>
+
+      {/* MAIN CONTENT */}
       <div className="planner-flex">
         {/* SIDEBAR */}
         <div className="sidebar">
-          <h3>📚 Plans</h3>
+          <h3>
+            <span>📚</span>
+            <span>My Plans</span>
+          </h3>
 
-          {loading && plans.length === 0 ? (
-            <div style={{ padding: "10px", color: "#999" }}>Loading plans...</div>
-          ) : plans.length === 0 ? (
-            <div style={{ padding: "10px", color: "#999" }}>No plans yet</div>
-          ) : (
-            plans.map((plan) => (
-              <div
-                key={plan._id}
-                className={`plan-item ${selectedPlan?._id === plan._id ? "active" : ""}`}
-                onClick={() => setSelectedPlan(plan)}
-              >
-                <span>{plan.title}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeletePlan(plan._id);
-                  }}
+          <div className="plans-list">
+            {loading && plans.length === 0 ? (
+              <div className="empty-state">⏳ Loading plans...</div>
+            ) : plans.length === 0 ? (
+              <div className="empty-state">✨ No plans yet. Create your first one!</div>
+            ) : (
+              plans.map((plan) => (
+                <div
+                  key={plan._id}
+                  className={`plan-item ${selectedPlan?._id === plan._id ? "active" : ""}`}
+                  onClick={() => setSelectedPlan(plan)}
+                  title={plan.title}
                 >
-                  🗑
-                </button>
-              </div>
-            ))
-          )}
+                  <span>{plan.title}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePlan(plan._id);
+                    }}
+                    title="Delete plan"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
 
           <div className="create-plan">
             <input
-              placeholder="New plan..."
+              placeholder="New plan name..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreatePlan()}
             />
-            <button onClick={handleCreatePlan} disabled={loading}>+ Add</button>
+            <button onClick={handleCreatePlan} disabled={loading}>
+              {loading ? "Adding..." : "+ Create Plan"}
+            </button>
           </div>
         </div>
 
         {/* MAIN TIMETABLE */}
         <div className="timetable">
-
-          {/* TASK INPUT */}
-          <div className="task-input top">
-            <input
-              placeholder="Task title..."
-              value={taskInput}
-              onChange={(e) => setTaskInput(e.target.value)}
-            />
-            <input
-              type="date"
-              value={taskDate}
-              onChange={(e) => setTaskDate(e.target.value)}
-            />
-            <input
-              type="time"
-              value={taskTime}
-              onChange={(e) => setTaskTime(e.target.value)}
-            />
-            <button
-              onClick={handleAddTask}
-              disabled={!taskInput.trim() || !taskDate || !taskTime || !selectedPlan || loading}
-              title={!selectedPlan ? "Select a plan first" : ""}
-            >
-              {loading ? "Adding..." : "Add Task"}
-            </button>
+          {/* HEADER SECTION */}
+          <div className="timetable-header">
+            <h2 className={`plan-title-bar ${!selectedPlan ? "disabled" : ""}`}>
+              {selectedPlan ? `📖 ${selectedPlan.title}` : "📖 No plan selected"}
+            </h2>
           </div>
 
-          {/* SELECTED PLAN NAME */}
-          {selectedPlan ? (
-            <div className="plan-title-bar">
-              📖 {selectedPlan.title}
+          {/* TASK INPUT SECTION */}
+          <div className="task-input-section">
+            <label className="task-input-label">Add New Task</label>
+            <div className="task-input">
+              <input
+                placeholder="Task name..."
+                value={taskInput}
+                onChange={(e) => setTaskInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+              />
+              <input
+                type="date"
+                value={taskDate}
+                onChange={(e) => setTaskDate(e.target.value)}
+                title="Task date"
+              />
+              <input
+                type="time"
+                value={taskTime}
+                onChange={(e) => setTaskTime(e.target.value)}
+                title="Task time"
+              />
+              <button
+                onClick={handleAddTask}
+                disabled={!taskInput.trim() || !taskDate || !taskTime || !selectedPlan || loading}
+                title={!selectedPlan ? "Select a plan first" : "Add this task"}
+              >
+                {loading ? "Adding..." : "Add"}
+              </button>
             </div>
-          ) : (
-            <div className="plan-title-bar" style={{ opacity: 0.5 }}>
-              📖 No plan selected
-            </div>
-          )}
+          </div>
 
-          {/* GRID HEADER */}
-          <div className="table-header">
-            <div className="time-col"></div>
-            {days.map((d) => (
-              <div key={d} className="day-col">{d}</div>
+          {/* TIMETABLE GRID */}
+          <div className="timetable-grid">
+            {/* GRID HEADER */}
+            <div className="table-header">
+              <div className="time-col">Time</div>
+              {days.map((d) => (
+                <div key={d} className="day-col">
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* GRID ROWS */}
+            {timeSlots.map((time) => (
+              <div key={time} className="table-row">
+                <div className="time-col">{time}</div>
+                {days.map((day) => {
+                  const task = selectedPlan ? getTask(day, time) : null;
+                  return (
+                    <div key={day} className={`cell ${task ? "has-task" : ""}`}>
+                      {task && (
+                        <div className={`task-box ${task.status === "completed" ? "done" : ""}`}>
+                          <span title={task.title}>{task.title}</span>
+                          <div className="task-actions">
+                            <button
+                              onClick={() => handleToggle(task)}
+                              title={
+                                task.status === "completed"
+                                  ? "Mark as pending"
+                                  : "Mark as complete"
+                              }
+                            >
+                              {task.status === "completed" ? "↩️" : "✓"}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(task._id)}
+                              title="Delete task"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             ))}
           </div>
-
-          {/* GRID ROWS */}
-          {timeSlots.map((time) => (
-            <div key={time} className="table-row">
-              <div className="time-col">{time}</div>
-              {days.map((day) => {
-                const task = selectedPlan ? getTask(day, time) : null;
-                return (
-                  <div key={day} className={`cell ${task ? "has-task" : ""}`}>
-                    {task && (
-                      <div className={`task-box ${task.status === "completed" ? "done" : ""}`}>
-                        <span>{task.title}</span>
-                        <div className="task-actions">
-                          <button
-                            onClick={() => handleToggle(task)}
-                            title={task.status === "completed" ? "Mark pending" : "Mark complete"}
-                          >
-                            {task.status === "completed" ? "↩" : "✔"}
-                          </button>
-                          <button onClick={() => handleDeleteTask(task._id)}>🗑</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* CALENDAR */}
-      <div className="calendar-box">
-        <Calendar value={selectedDate} onChange={setSelectedDate} />
-      </div>
+      {/* CALENDAR WIDGET */}
+      {showCalendar && (
+        <div className="calendar-box">
+          <div className="calendar-header">
+            <h4>Calendar</h4>
+            <button
+              className="calendar-close-btn"
+              onClick={() => setShowCalendar(false)}
+              title="Hide calendar"
+            >
+              ✕
+            </button>
+          </div>
+          <Calendar value={selectedDate} onChange={setSelectedDate} />
+        </div>
+      )}
 
+      {/* CALENDAR TOGGLE BUTTON */}
+      {!showCalendar && (
+        <button
+          className="calendar-toggle-btn"
+          onClick={() => setShowCalendar(true)}
+          title="Show calendar"
+        >
+          📅
+        </button>
+      )}
     </div>
   );
 }
