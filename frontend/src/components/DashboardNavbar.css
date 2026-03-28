@@ -1,0 +1,107 @@
+/* ===== DASHBOARD NAVBAR ===== */
+
+.dashboard-navbar{
+  height:70px;
+  background:#ffffff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 40px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.06);
+  position:sticky;
+  top:0;
+  z-index:999;
+}
+
+/* LEFT */
+
+.dashboard-left{
+  display:flex;
+  align-items:center;
+  gap:40px;
+}
+
+/* LOGO */
+
+.dashboard-logo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+}
+
+.dashboard-logo img{
+  width:35px;
+}
+
+/* NAV LINKS */
+
+.dashboard-links{
+  display:flex;
+  gap:25px;
+}
+
+.dashboard-links a{
+  text-decoration:none;
+  color:#444;
+  font-size:14px;
+  font-weight:500;
+  position:relative;
+  transition:0.25s;
+}
+
+.dashboard-links a:hover{
+  color:#4CAF50;
+}
+
+/* ACTIVE LINK */
+
+.dashboard-links a.active{
+  color:#4CAF50;
+}
+
+/* RIGHT SIDE */
+
+.dashboard-right{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+/* USER */
+
+.dashboard-user{
+  font-size:14px;
+  color:#555;
+}
+
+/* LOGOUT BUTTON */
+
+.logout-btn{
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  padding:8px 16px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+  transition:0.25s;
+}
+
+.logout-btn:hover{
+  background:#e63b3b;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.dashboard-links{
+  display:none;
+}
+
+.dashboard-user{
+  display:none;
+}
+
+}
