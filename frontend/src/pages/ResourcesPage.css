@@ -1,0 +1,283 @@
+/* ================= RESOURCES HERO ================= */
+.resources-page {
+ margin-top: -60px;
+  
+  padding: -10px;
+}
+
+
+
+.resources-hero {
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("../assets/resource-hero.jpg");
+
+  background-size: cover;
+  background-position: center;
+  padding: 170px 20px;
+  color: white;
+  text-align: center;
+    width: 100vw;   /* full screen width */
+  margin-left: calc(-50vw + 50%);
+}
+
+.resources-hero-content {
+  max-width: 800px;
+  margin: auto;
+}
+
+.resources-hero h1 {
+  font-size: 42px;
+  margin-bottom: 20px;
+}
+
+.resources-hero p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+/* Buttons */
+
+.hero-buttons button {
+  margin: 10px;
+  padding: 14px 30px;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s ease;
+}
+
+.primary-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.primary-btn:hover {
+  transform: translateY(-4px);
+}
+
+.secondary-btn {
+  background: white;
+  color: #333;
+}
+
+.secondary-btn:hover {
+  transform: translateY(-4px);
+}
+
+/* ================= FEATURES SECTION ================= */
+
+.resource-features {
+  padding: 80px 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  background: #f4f6f9;
+}
+
+.resource-card {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
+
+.resource-card:hover {
+  transform: translateY(-10px);
+}
+
+.resource-card h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.resource-card p {
+  color: #555;
+  font-size: 14px;
+}
+
+/* STATISTICS */
+
+.resource-stats{
+display:flex;
+justify-content:center;
+gap:130px;
+margin:80px 0;
+flex-wrap:wrap;
+}
+
+.stat-card{
+text-align:center;
+padding:px;
+}
+
+.stat-card h2{
+font-size:40px;
+color:#4CAF50;
+}
+
+.stat-card p{
+color:#666;
+}
+
+/* HOW IT WORKS */
+
+.how-it-works{
+text-align:center;
+margin:100px 0;
+}
+
+.steps{
+display:flex;
+justify-content:center;
+gap:40px;
+margin-top:40px;
+flex-wrap:wrap;
+}
+
+.step-card{
+background:#fff;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+width:220px;
+}
+
+.step-icon{
+font-size:40px;
+margin-bottom:10px;
+}
+
+/* ILLUSTRATION SECTION */
+
+.resource-illustration{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:80px;
+margin:120px auto;
+max-width:1200px;
+padding:0 20px;
+flex-wrap:wrap;
+}
+
+/* TEXT SIDE */
+
+.illustration-text{
+max-width:550px;
+}
+
+.illustration-text h2{
+font-size:36px;
+margin-bottom:20px;
+color:#222;
+}
+
+.illustration-desc{
+color:#555;
+line-height:1.7;
+margin-bottom:18px;
+font-size:16px;
+}
+
+/* FEATURES SECTION */
+
+.resource-features{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+max-width:11000px;
+margin:100px auto;
+padding:30px 20px;
+}
+
+
+/* hover effect */
+
+.resource-card:hover{
+transform:translateY(-8px);
+box-shadow:0 20px 40px rgba(0,0,0,0.12);
+}
+
+/* ICON */
+
+.feature-icon{
+font-size:34px;
+margin-bottom:15px;
+width:60px;
+height:60px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+background:#f4f7fb;
+margin-left:auto;
+margin-right:auto;
+}
+
+/* TITLE */
+
+.resource-card h3{
+margin-bottom:10px;
+font-size:18px;
+color:#222;
+}
+
+/* TEXT */
+
+.resource-card p{
+font-size:14px;
+color:#555;
+line-height:1.6;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.resource-features{
+grid-template-columns:1fr;
+}
+
+}
+
+/* IMAGE SIDE */
+
+.illustration-image{
+flex:1;
+display:flex;
+justify-content:center;
+}
+
+.illustration-image img{
+width:480px;
+border-radius:16px;
+box-shadow:0 20px 40px rgba(0,0,0,0.15);
+transition:0.4s ease;
+}
+
+.illustration-image img:hover{
+transform:scale(1.03);
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.resource-illustration{
+flex-direction:column;
+text-align:center;
+}
+
+.illustration-features{
+grid-template-columns:1fr;
+}
+
+.illustration-image img{
+width:100%;
+}
+
+}
