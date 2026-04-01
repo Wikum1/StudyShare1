@@ -31,16 +31,19 @@ export default function RegisterPage() {
     const email = form.email.trim().toLowerCase();
     const password = form.password;
 
+    // Required fields validation
     if (!name || !email || !password) {
       setError("Please fill all fields");
       return;
     }
 
+    // Name validation
     if (name.length < 3) {
       setError("Full Name must be at least 3 characters");
       return;
     }
 
+    // SLIIT email validation
     const emailRegex = /^it\d{8}@my\.sliit\.lk$/;
 
     if (!emailRegex.test(email)) {
@@ -48,10 +51,21 @@ export default function RegisterPage() {
       return;
     }
 
+    // Password validation
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
+
+    /* TEMP REGISTER */
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        name,
+        email,
+        password
+      })
+    );
 
     try {
       setLoading(true);
@@ -130,6 +144,7 @@ export default function RegisterPage() {
           <button type="submit" disabled={loading}>
             {loading ? "Creating Account..." : "Create Account"}
           </button>
+          <button type="submit">Create Account</button>
         </form>
 
         <p className="auth-switch">

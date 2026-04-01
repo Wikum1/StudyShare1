@@ -1,11 +1,16 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useContext } from "react"; // 🔥 NEW
+import { ThemeContext } from "../context/ThemeContext"; // 🔥 NEW
 import "./DashboardNavbar.css";
 import logo from "../assets/logo.png";
 
 export default function DashboardNavbar() {
 
   const navigate = useNavigate();
+
+  // 🔥 GET THEME STATE
+  const { darkMode, setDarkMode } = useContext(ThemeContext);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -23,6 +28,7 @@ export default function DashboardNavbar() {
         <img src={logo} alt="StudyShare Logo" />
       </Link>
          
+          <img src={logo} alt="StudyShare Logo" />
         </div>
 
         <div className="dashboard-links">
@@ -44,6 +50,11 @@ export default function DashboardNavbar() {
           </NavLink>
 
           {/* <NavLink to="/dashboard/profile">
+          <NavLink to="/dashboard/study-planner">
+            Study Planner
+          </NavLink>
+
+          <NavLink to="/dashboard/profile">
             Profile
           </NavLink> */}
 
@@ -53,6 +64,14 @@ export default function DashboardNavbar() {
 
       {/* RIGHT SIDE */}
       <div className="dashboard-right">
+
+        {/* 🌙 DARK MODE BUTTON */}
+        <button
+          className="theme-toggle"
+          onClick={() => setDarkMode(!darkMode)}
+        >
+          {darkMode ? "☀️" : "🌙"}
+        </button>
 
         <div className="dashboard-user">
           👤 Student
