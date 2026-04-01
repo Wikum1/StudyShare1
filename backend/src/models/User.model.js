@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["student", "admin"],
       default: "student"
+    },
+    phoneNumber: {
+      type: String,
+      default: null,
+      trim: true
     }
   },
   { timestamps: true }

@@ -8,6 +8,7 @@ const adminResourceRoutes = require("./routes/admin/adminResource.routes");
 const contactRoutes = require("./routes/contactRoutes");
 const authRoutes = require("./routes/auth.routes");
 const studyPlanRoutes = require("./routes/studyPlan.routes");
+const reminderScheduler = require("./services/reminderScheduler");
 
 const app = express();
 
@@ -22,7 +23,11 @@ mongoose
   .connect(
     "mongodb+srv://student1:8g81fbYGlA0mndvi@cluster0.ux2zfme.mongodb.net/?appName=Cluster0"
   )
-  .then(() => console.log("MongoDB Connected"))
+  .then(() => {
+    console.log("MongoDB Connected");
+    // Initialize reminder scheduler after DB connection
+    reminderScheduler.initialize();
+  })
   .catch((err) => console.log(err));
 
 // Routes

@@ -1,12 +1,5 @@
 const mongoose = require("mongoose");
 
-const ALLOWED_TIME_SLOTS = [
-  "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
-];
-
 const taskSchema = new mongoose.Schema(
   {
     plan: {
@@ -54,9 +47,14 @@ const taskSchema = new mongoose.Schema(
     time: {
       type: String,
       required: [true, "Task time is required"],
-      enum: {
-        values: ALLOWED_TIME_SLOTS,
-        message: "Task time must match an available planner time slot",
+      validate: {
+        validator: function (value) {
+          if (!/^\d{2}:\d{2}$/.test(value)) return false;
+
+          const [hours, minutes] = value.split(":").map(Number);
+          return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+        },
+        message: "Task time must be in HH:MM format with valid hours (00-23) and minutes (00-59)",
       },
     },
     isImportant: {

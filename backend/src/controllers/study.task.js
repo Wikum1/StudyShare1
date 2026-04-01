@@ -1,12 +1,6 @@
 const Task = require("../models/Task.model");
 const StudyPlan = require("../models/StudyPlan.model");
-
-const ALLOWED_TIME_SLOTS = [
-  "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
-];
+const reminderScheduler = require("../services/reminderScheduler");
 
 const validateTaskTitle = (title) => {
   const cleanedTitle = title?.replace(/\s+/g, " ").trim();
@@ -74,8 +68,14 @@ const validateTaskTime = (time) => {
     return { valid: false, message: "Task time must be in HH:MM format" };
   }
 
-  if (!ALLOWED_TIME_SLOTS.includes(time)) {
-    return { valid: false, message: "Task time must match an available planner time slot" };
+  const [hours, minutes] = time.split(":").map(Number);
+
+  if (hours < 0 || hours > 23) {
+    return { valid: false, message: "Hour must be between 00 and 23" };
+  }
+
+  if (minutes < 0 || minutes > 59) {
+    return { valid: false, message: "Minutes must be between 00 and 59" };
   }
 
   return { valid: true, cleanedTime: time };
@@ -179,6 +179,11 @@ const addTask = async (req, res) => {
 
     plan.tasks.push(task._id);
     await plan.save();
+
+    // Schedule reminder if enabled
+    if (hasReminder) {
+      await reminderScheduler.addReminder(task);
+    }
 
     const updatedPlan = await StudyPlan.findOne({
       _id: req.params.planId,
@@ -335,6 +340,9 @@ const updateTask = async (req, res) => {
 
     await task.save();
 
+    // Update reminder if changed
+    await reminderScheduler.updateReminder(task);
+
     const updatedPlan = await StudyPlan.findOne({
       _id: req.params.planId,
       user: userId,
@@ -368,6 +376,9 @@ const deleteTask = async (req, res) => {
     if (task.plan.toString() !== req.params.planId) {
       return res.status(404).json({ message: "Task not found in this plan" });
     }
+
+    // Delete scheduled reminder if any
+    await reminderScheduler.deleteReminder(req.params.taskId);
 
     await Task.findByIdAndDelete(req.params.taskId);
 
