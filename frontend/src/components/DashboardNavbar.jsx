@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useContext } from "react"; // 🔥 NEW
 import { ThemeContext } from "../context/ThemeContext"; // 🔥 NEW
 import "./DashboardNavbar.css";
@@ -23,6 +24,10 @@ export default function DashboardNavbar() {
       <div className="dashboard-left">
 
         <div className="dashboard-logo">
+           <Link to="/">
+        <img src={logo} alt="StudyShare Logo" />
+      </Link>
+         
           <img src={logo} alt="StudyShare Logo" />
         </div>
 
@@ -31,22 +36,27 @@ export default function DashboardNavbar() {
           <NavLink to="/dashboard" end>
             Dashboard
           </NavLink>
+           
+          <NavLink to="/dashboard/wall">
+            Wall
+          </NavLink>
 
           <NavLink to="/dashboard/my-resources">
             My Resources
           </NavLink>
 
-          <NavLink to="/dashboard/upload">
-            Upload
+          <NavLink to="/dashboard/planner">
+            Planner
           </NavLink>
 
+          {/* <NavLink to="/dashboard/profile">
           <NavLink to="/dashboard/study-planner">
             Study Planner
           </NavLink>
 
           <NavLink to="/dashboard/profile">
             Profile
-          </NavLink>
+          </NavLink> */}
 
         </div>
 

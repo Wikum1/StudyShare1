@@ -115,7 +115,7 @@ export default function MyResources() {
             </p>
           </div>
 
-          <a href="/upload" className="upload-btn">
+          <a href="/dashboard/upload" className="upload-btn">
             ⬆ Upload New
           </a>
         </div>

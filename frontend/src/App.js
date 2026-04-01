@@ -24,6 +24,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
+import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
 
 /* PUBLIC LAYOUT */
@@ -140,6 +141,7 @@ function App() {
             </DashboardLayout>
           }
         />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         <Route
           path="/dashboard/my-resources"
