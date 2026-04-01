@@ -2,7 +2,6 @@ const Schedule = require("node-schedule");
 const Task = require("../models/Task.model");
 const StudyPlan = require("../models/StudyPlan.model");
 const User = require("../models/User.model");
-const { sendWhatsAppReminder } = require("./whatsappService");
 
 class ReminderScheduler {
   constructor() {
@@ -22,7 +21,12 @@ class ReminderScheduler {
       const tasksWithReminders = await Task.find({
         hasReminder: true,
         reminderSent: false
-      }).populate("plan");
+      }).populate({
+        path: "plan",
+        populate: {
+          path: "user"
+        }
+      });
 
       console.log(`Found ${tasksWithReminders.length} pending reminders`);
 
@@ -58,6 +62,7 @@ class ReminderScheduler {
       }
 
       const jobId = `task-${task._id}`;
+      const taskId = task._id; // Store only the ID, not the full object
 
       // Cancel existing job if any
       if (this.jobs.has(jobId)) {
@@ -66,7 +71,7 @@ class ReminderScheduler {
 
       // Schedule the reminder
       const job = Schedule.scheduleJob(reminderTime, async () => {
-        await this.triggerReminder(task);
+        await this.triggerReminder(taskId);
         this.jobs.delete(jobId);
       });
 
@@ -81,39 +86,44 @@ class ReminderScheduler {
 
   /**
    * Trigger the reminder - send WhatsApp message
-   * @param {Object} task - Task object
+   * @param {String} taskId - Task ID to trigger reminder for
    */
-  async triggerReminder(task) {
+  async triggerReminder(taskId) {
     try {
-      console.log(`🔔 Triggering reminder for task: ${task.title}`);
+      // Fetch fresh task data with populated plan and user
+      const task = await Task.findById(taskId).populate({
+        path: "plan",
+        populate: {
+          path: "user"
+        }
+      });
 
-      // Get plan details
-      const plan = await StudyPlan.findById(task.plan);
-      const user = await User.findById(plan.userId);
-
-      if (!user) {
-        console.error(`User not found for task ${task._id}`);
+      if (!task) {
+        console.error(`Task not found: ${taskId}`);
         return;
       }
 
-      const taskDetails = {
-        title: task.title,
-        date: task.date,
-        time: task.time,
-        planTitle: plan?.title || "Study Plan"
-      };
+      console.log(`🔔 Triggering reminder for task: ${task.title}`);
 
-      // Send WhatsApp
-      if (user.phoneNumber) {
-        const whatsappResult = await sendWhatsAppReminder(user.phoneNumber, taskDetails);
-        if (whatsappResult.success) {
-          console.log(`✅ WhatsApp message sent to ${user.phoneNumber}`);
-        } else {
-          console.log(`⚠️  WhatsApp send failed: ${whatsappResult.error}`);
-        }
-      } else {
-        console.log(`⚠️  No phone number for WhatsApp notification`);
+      const plan = task.plan;
+      
+      if (!plan) {
+        console.error(`Plan not found for task ${task._id}`);
+        return;
       }
+
+      console.log(`Plan found: ${plan._id}, User ref: ${plan.user}`);
+
+      const user = plan.user;
+      if (!user) {
+        console.error(`⚠️  User not found in plan ${plan._id}. Plan user reference: ${plan.user}`);
+        // Try fetching user directly from plan without populate
+        const freshPlan = await StudyPlan.findById(plan._id);
+        console.error(`Fresh plan user field: ${freshPlan.user}`);
+        return;
+      }
+
+      console.log(`✅ Reminder triggered for task: ${task.title}`);
 
       // Mark reminder as sent
       task.reminderSent = true;

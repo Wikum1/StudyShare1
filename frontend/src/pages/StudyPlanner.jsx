@@ -246,15 +246,15 @@ export default function StudyPlanner() {
     const [hours, minutes] = reminderTime.split(":").map(Number);
     const reminder = new Date(year, month - 1, day, hours, minutes);
 
-    const now = new Date();
-    if (reminder < now) {
-      return "Reminder time cannot be in the past";
-    }
-
     // Create task datetime
     const [taskYear, taskMonth, taskDay] = taskDate.split("-").map(Number);
     const [taskHours, taskMinutes] = taskTime.split(":").map(Number);
     const taskDateTime = new Date(taskYear, taskMonth - 1, taskDay, taskHours, taskMinutes);
+
+    // Validate reminder is before task
+    if (reminder >= taskDateTime) {
+      return "Reminder must be before the task time";
+    }
 
     const sixHoursBeforeTask = new Date(
       taskDateTime.getTime() - 6 * 60 * 60 * 1000,
