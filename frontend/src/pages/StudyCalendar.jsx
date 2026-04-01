@@ -28,6 +28,31 @@ function getTodayLocalDateString() {
   return formatDateToYMD(now);
 }
 
+// Convert 24-hour time (HH:MM) to 12-hour format
+function convertTo12Hour(time24) {
+  if (!time24) return { hour: "9", minute: "00", period: "AM" };
+  const [hours, minutes] = time24.split(":");
+  const hour = parseInt(hours);
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return {
+    hour: String(hour12),
+    minute: minutes || "00",
+    period: period
+  };
+}
+
+// Convert 12-hour format to 24-hour time (HH:MM)
+function convertTo24Hour(hour12, minute, period) {
+  let hour = parseInt(hour12) || 0;
+  if (period === "PM" && hour !== 12) {
+    hour += 12;
+  } else if (period === "AM" && hour === 12) {
+    hour = 0;
+  }
+  return `${String(hour).padStart(2, "0")}:${minute || "00"}`;
+}
+
 export default function StudyCalendar() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -42,6 +67,30 @@ export default function StudyCalendar() {
   const [modalSelectedDate, setModalSelectedDate] = useState(new Date());
   const [modalTasks, setModalTasks] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  // Plan creation state
+  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
+  const [newPlanName, setNewPlanName] = useState("");
+  const [creatingPlan, setCreatingPlan] = useState(false);
+
+  // Task creation state
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [taskFormData, setTaskFormData] = useState({
+    title: "",
+    time: "09:00",
+    taskTimeHour: "9",
+    taskTimeMinute: "00",
+    taskTimePeriod: "AM",
+    isImportant: false,
+    hasReminder: false,
+    reminderDate: "",
+    reminderTime: "",
+    reminderTimeHour: "9",
+    reminderTimeMinute: "00",
+    reminderTimePeriod: "AM"
+  });
+  const [showReminderCalendar, setShowReminderCalendar] = useState(false);
+  const [addingTask, setAddingTask] = useState(false);
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -88,6 +137,106 @@ export default function StudyCalendar() {
       setLoading(false);
     }
   }, []);
+
+  const handleCreatePlan = async () => {
+    const cleanedPlanName = newPlanName.trim();
+
+    if (!cleanedPlanName) {
+      setError("Please enter a plan name");
+      return;
+    }
+
+    try {
+      setCreatingPlan(true);
+      setError("");
+      
+      const newPlan = await createPlan({ title: cleanedPlanName });
+      
+      setPlans([...plans, newPlan]);
+      setSelectedPlan(newPlan);
+      setNewPlanName("");
+      setShowCreatePlanModal(false);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to create plan");
+      console.error(err);
+    } finally {
+      setCreatingPlan(false);
+    }
+  };
+
+  const handleAddTask = async () => {
+    if (!selectedPlan) {
+      setError("Please select a study plan first");
+      return;
+    }
+
+    const cleanedTitle = taskFormData.title.trim();
+    if (!cleanedTitle) {
+      setError("Please enter a task title");
+      return;
+    }
+
+    if (!taskFormData.taskTimeHour || !taskFormData.taskTimeMinute) {
+      setError("Please enter a time");
+      return;
+    }
+
+    if (taskFormData.hasReminder && (!taskFormData.reminderDate || !taskFormData.reminderTimeHour)) {
+      setError("Please set both reminder date and time");
+      return;
+    }
+
+    try {
+      setAddingTask(true);
+      setError("");
+
+      // Convert 12-hour format to 24-hour
+      const time24 = convertTo24Hour(taskFormData.taskTimeHour, taskFormData.taskTimeMinute, taskFormData.taskTimePeriod);
+      const reminderTime24 = taskFormData.hasReminder 
+        ? convertTo24Hour(taskFormData.reminderTimeHour, taskFormData.reminderTimeMinute, taskFormData.reminderTimePeriod)
+        : null;
+
+      const newTask = {
+        title: cleanedTitle,
+        date: formatDateToYMD(currentDate),
+        time: time24,
+        isImportant: taskFormData.isImportant,
+        hasReminder: taskFormData.hasReminder,
+        reminderDateTime: taskFormData.hasReminder 
+          ? `${taskFormData.reminderDate}T${reminderTime24}` 
+          : null,
+        status: "pending"
+      };
+
+      const updatedPlan = await addTask(selectedPlan._id, newTask);
+      
+      // Update the selectedPlan in state
+      setSelectedPlan(updatedPlan);
+      setPlans(plans.map(p => p._id === updatedPlan._id ? updatedPlan : p));
+      
+      // Reset form and close modal
+      setTaskFormData({
+        title: "",
+        time: "09:00",
+        taskTimeHour: "9",
+        taskTimeMinute: "00",
+        taskTimePeriod: "AM",
+        isImportant: false,
+        hasReminder: false,
+        reminderDate: "",
+        reminderTime: "",
+        reminderTimeHour: "9",
+        reminderTimeMinute: "00",
+        reminderTimePeriod: "AM"
+      });
+      setShowAddTaskModal(false);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to add task");
+      console.error(err);
+    } finally {
+      setAddingTask(false);
+    }
+  };
 
   const getTodayLocalDateString = () => {
     const now = new Date();
@@ -259,8 +408,18 @@ export default function StudyCalendar() {
     return (
       <div className="day-view-container">
         <div className="day-view-header">
-          <h2>📅 {currentDate.toLocaleDateString("en-US", { weekday: "long" })}</h2>
-          <p className="day-view-date">{dateStr}</p>
+          <div className="day-header-content">
+            <h2>📅 {currentDate.toLocaleDateString("en-US", { weekday: "long" })}</h2>
+            <p className="day-view-date">{dateStr}</p>
+          </div>
+          <button
+            className="add-task-btn"
+            onClick={() => setShowAddTaskModal(true)}
+            disabled={!selectedPlan}
+            title={selectedPlan ? "Add task to this day" : "Please select a study plan first"}
+          >
+            + Add Task
+          </button>
         </div>
 
         <div className="day-timeline">
@@ -496,7 +655,314 @@ export default function StudyCalendar() {
             </option>
           ))}
         </select>
+        <button
+          className="create-plan-btn"
+          onClick={() => setShowCreatePlanModal(true)}
+          title="Create new study plan"
+        >
+          + New Plan
+        </button>
       </div>
+
+      {/* CREATE PLAN MODAL */}
+      {showCreatePlanModal && (
+        <div className="plan-modal-overlay" onClick={() => setShowCreatePlanModal(false)}>
+          <div className="plan-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="plan-modal-header">
+              <h3>Create New Study Plan</h3>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowCreatePlanModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="plan-modal-body">
+              <input
+                type="text"
+                placeholder="Enter plan name (e.g., Spring 2026 Semester)"
+                value={newPlanName}
+                onChange={(e) => setNewPlanName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleCreatePlan();
+                  }
+                }}
+                className="plan-input"
+                autoFocus
+              />
+            </div>
+
+            <div className="plan-modal-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowCreatePlanModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-create"
+                onClick={handleCreatePlan}
+                disabled={creatingPlan || !newPlanName.trim()}
+              >
+                {creatingPlan ? "Creating..." : "Create Plan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD TASK MODAL */}
+      {showAddTaskModal && (
+        <div className="task-modal-overlay" onClick={() => setShowAddTaskModal(false)}>
+          <div className="task-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="task-modal-header">
+              <h3>Add New Task</h3>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowAddTaskModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="task-modal-body">
+              <div className="form-group">
+                <label>Task Title</label>
+                <input
+                  type="text"
+                  placeholder="Enter task title"
+                  value={taskFormData.title}
+                  onChange={(e) =>
+                    setTaskFormData({ ...taskFormData, title: e.target.value })
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddTask();
+                  }}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Date: {formatDateToYMD(currentDate)}</label>
+              </div>
+
+              <div className="form-group">
+                <label>Time</label>
+                <div className="time-picker-group">
+                  <div className="time-inputs">
+                    <input
+                      type="number"
+                      min="1"
+                      max="12"
+                      placeholder="HH"
+                      value={taskFormData.taskTimeHour}
+                      onChange={(e) =>
+                        setTaskFormData({
+                          ...taskFormData,
+                          taskTimeHour: e.target.value
+                        })
+                      }
+                      className="time-input hour-input"
+                    />
+                    <span className="time-separator">:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="MM"
+                      value={taskFormData.taskTimeMinute}
+                      onChange={(e) =>
+                        setTaskFormData({
+                          ...taskFormData,
+                          taskTimeMinute: String(e.target.value).padStart(2, "0")
+                        })
+                      }
+                      className="time-input minute-input"
+                    />
+                  </div>
+                  <div className="period-buttons">
+                    <button
+                      type="button"
+                      className={`period-btn ${taskFormData.taskTimePeriod === "AM" ? "active" : ""}`}
+                      onClick={() =>
+                        setTaskFormData({
+                          ...taskFormData,
+                          taskTimePeriod: "AM"
+                        })
+                      }
+                    >
+                      AM
+                    </button>
+                    <button
+                      type="button"
+                      className={`period-btn ${taskFormData.taskTimePeriod === "PM" ? "active" : ""}`}
+                      onClick={() =>
+                        setTaskFormData({
+                          ...taskFormData,
+                          taskTimePeriod: "PM"
+                        })
+                      }
+                    >
+                      PM
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={taskFormData.isImportant}
+                    onChange={(e) =>
+                      setTaskFormData({
+                        ...taskFormData,
+                        isImportant: e.target.checked
+                      })
+                    }
+                  />
+                  Mark as Important ⭐
+                </label>
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={taskFormData.hasReminder}
+                    onChange={(e) => {
+                      setTaskFormData({
+                        ...taskFormData,
+                        hasReminder: e.target.checked,
+                        reminderDate: e.target.checked ? formatDateToYMD(currentDate) : "",
+                        reminderTime: e.target.checked ? "09:00" : ""
+                      });
+                    }}
+                  />
+                  Set Reminder 🔔
+                </label>
+              </div>
+
+              {taskFormData.hasReminder && (
+                <div className="reminder-section">
+                  <div className="reminder-date-picker">
+                    <label>Reminder Date</label>
+                    <button
+                      className="date-picker-btn"
+                      onClick={() => setShowReminderCalendar(true)}
+                    >
+                      📅 {taskFormData.reminderDate || "Select date"}
+                    </button>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Reminder Time</label>
+                    <div className="time-picker-group">
+                      <div className="time-inputs">
+                        <input
+                          type="number"
+                          min="1"
+                          max="12"
+                          placeholder="HH"
+                          value={taskFormData.reminderTimeHour}
+                          onChange={(e) =>
+                            setTaskFormData({
+                              ...taskFormData,
+                              reminderTimeHour: e.target.value
+                            })
+                          }
+                          className="time-input hour-input"
+                        />
+                        <span className="time-separator">:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          placeholder="MM"
+                          value={taskFormData.reminderTimeMinute}
+                          onChange={(e) =>
+                            setTaskFormData({
+                              ...taskFormData,
+                              reminderTimeMinute: String(e.target.value).padStart(2, "0")
+                            })
+                          }
+                          className="time-input minute-input"
+                        />
+                      </div>
+                      <div className="period-buttons">
+                        <button
+                          type="button"
+                          className={`period-btn ${taskFormData.reminderTimePeriod === "AM" ? "active" : ""}`}
+                          onClick={() =>
+                            setTaskFormData({
+                              ...taskFormData,
+                              reminderTimePeriod: "AM"
+                            })
+                          }
+                        >
+                          AM
+                        </button>
+                        <button
+                          type="button"
+                          className={`period-btn ${taskFormData.reminderTimePeriod === "PM" ? "active" : ""}`}
+                          onClick={() =>
+                            setTaskFormData({
+                              ...taskFormData,
+                              reminderTimePeriod: "PM"
+                            })
+                          }
+                        >
+                          PM
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {showReminderCalendar && (
+                    <div className="reminder-calendar-modal">
+                      <Calendar
+                        value={
+                          taskFormData.reminderDate
+                            ? new Date(taskFormData.reminderDate)
+                            : new Date()
+                        }
+                        onChange={(date) => {
+                          setTaskFormData({
+                            ...taskFormData,
+                            reminderDate: formatDateToYMD(date)
+                          });
+                          setShowReminderCalendar(false);
+                        }}
+                        className="calendar"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {error && <div className="error-message">{error}</div>}
+            </div>
+
+            <div className="task-modal-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowAddTaskModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-create"
+                onClick={handleAddTask}
+                disabled={addingTask || !taskFormData.title.trim()}
+              >
+                {addingTask ? "Adding..." : "Add Task"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="calendar-view-container">
         {!selectedPlan ? (
