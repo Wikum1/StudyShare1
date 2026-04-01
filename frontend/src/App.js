@@ -24,7 +24,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
-import StudyPlanner from "./pages/StudyPlanner";
+import StudyCalendar from "./pages/StudyCalendar";
 
 /* PUBLIC LAYOUT */
 function PublicLayout({ children }) {
@@ -153,7 +153,7 @@ function App() {
           path="/dashboard/study-planner"
           element={
             <DashboardLayout>
-              <StudyPlanner />
+              <StudyCalendar />
             </DashboardLayout>
           }
         />

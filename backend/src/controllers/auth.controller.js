@@ -1,5 +1,10 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
+
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, "secret", { expiresIn: "7d" });
+};
 
 exports.register = async (req, res) => {
   try {
@@ -27,13 +32,16 @@ exports.register = async (req, res) => {
       role: role || "student"
     });
 
+    const token = generateToken(user._id);
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        token
       }
     });
   } catch (err) {
@@ -68,13 +76,16 @@ exports.login = async (req, res) => {
       });
     }
 
+    const token = generateToken(user._id);
+
     res.status(200).json({
       message: "Login successful",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        token
       }
     });
   } catch (err) {

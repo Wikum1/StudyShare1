@@ -439,7 +439,9 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid #e2e8f0;
   z-index: 1000;
-  width: 300px;
+  width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
   animation: slideUpIn 0.3s ease-out;
 }
 
@@ -529,6 +531,26 @@
 
 .calendar-box .react-calendar__month-view {
   padding: 8px;
+}
+
+/* Scrollbar styling for calendar box */
+.calendar-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.calendar-box::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.calendar-box::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.calendar-box::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* DARK MODE */
@@ -689,4 +711,421 @@ body.dark-mode .react-calendar button:hover {
 
 body.dark-mode .react-calendar .react-calendar__month-view__weekdays {
   color: #cbd5e1;
+}
+
+.task-input-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.field-error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.task-input-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.field-error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.task-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.task-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.task-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.task-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.important-badge {
+  background: #ffe08a;
+  color: #6b4f00;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.reminder-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.task-input-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.field-error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Calendar Important Day Styling */
+.calendar-important-day {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%) !important;
+  border-radius: 8px;
+  color: #7f1d1d !important;
+  font-weight: 600;
+}
+
+.calendar-box .react-calendar__tile {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.calendar-box .react-calendar__tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* REMINDER SECTION STYLING */
+.reminder-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f5f3ff 100%);
+  border: 2px solid #e0e7ff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+}
+
+.reminder-inputs-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.reminder-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reminder-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3f51b5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reminder-date-picker-btn {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+}
+
+.reminder-date-picker-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.reminder-date-picker-btn:active {
+  transform: translateY(0);
+}
+
+.reminder-time-input {
+  padding: 10px 14px;
+  border: 2px solid #c7d2fe;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+  transition: all 0.2s ease;
+  background: white;
+  color: #1e293b;
+}
+
+.reminder-time-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.reminder-time-input::placeholder {
+  color: #94a3b8;
+}
+
+.reminder-error {
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border-left: 3px solid #dc2626;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* REMINDER CALENDAR MODAL */
+.reminder-calendar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reminder-calendar-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reminder-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reminder-calendar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.3px;
+}
+
+.calendar-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.calendar-close-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Minimalist Calendar Styling */
+.reminder-calendar-modal .react-calendar {
+  width: 100%;
+  border: none;
+  background: white;
+  font-family: inherit;
+  padding: 0;
+}
+
+.reminder-calendar-modal .react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 8px;
+  padding: 0;
+}
+
+.reminder-calendar-modal .react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  min-width: 36px;
+}
+
+.reminder-calendar-modal .react-calendar__navigation button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.reminder-calendar-modal .react-calendar__month-view {
+  padding: 0;
+}
+
+.reminder-calendar-modal .react-calendar__month-view__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.reminder-calendar-modal .react-calendar__month-view__weekdays__weekday {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  padding: 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reminder-calendar-modal .react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 0;
+}
+
+.reminder-calendar-modal .react-calendar__tile {
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  background: white;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reminder-calendar-modal .react-calendar__tile:hover:enabled {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: scale(1.02);
+}
+
+.reminder-calendar-modal .react-calendar__tile--now {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.reminder-calendar-modal .react-calendar__tile--active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  font-weight: 600;
+}
+
+.reminder-calendar-modal .react-calendar__tile--active:hover {
+  background: #764ba2;
+  border-color: #764ba2;
+}
+
+.reminder-calendar-modal .react-calendar__tile--disabled {
+  color: #cbd5e1;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .reminder-inputs-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-calendar-modal {
+    width: 95%;
+    padding: 16px;
+  }
 }

@@ -8,7 +8,18 @@ const studyPlanSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
+      required: [true, "Plan name is required"],
+      trim: true,
+      minlength: [3, "Plan name must be at least 3 characters"],
+      maxlength: [60, "Plan name must be less than 60 characters"],
+      validate: {
+        validator: function (value) {
+          return (
+            /^[a-zA-Z0-9\s.,()&-]+$/.test(value) && /[a-zA-Z0-9]/.test(value)
+          );
+        },
+        message: "Plan name contains invalid characters",
+      },
     },
     subject: {
       type: String,
@@ -25,7 +36,7 @@ const studyPlanSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("StudyPlan", studyPlanSchema);

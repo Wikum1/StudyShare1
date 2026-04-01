@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const { protect } = require("../middleware/auth.middleware");
+
 const {
   createPlan,
   getPlans,
@@ -11,13 +13,16 @@ const {
 
 const taskRoutes = require("./Task.routes");
 
+// Protect all study planner routes
+router.use(protect);
+
 // ➕ Create Plan
 router.post("/", createPlan);
 
 // 📥 Get All Plans
 router.get("/", getPlans);
 
-// 🔗 Nested Task Routes — MUST come BEFORE /:id route
+// 🔗 Nested Task Routes
 router.use("/:planId/tasks", taskRoutes);
 
 // 📥 Get Single Plan
