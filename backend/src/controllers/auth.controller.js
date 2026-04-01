@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 
+/* ================= REGISTER ================= */
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -27,8 +29,18 @@ exports.register = async (req, res) => {
       role: role || "student"
     });
 
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role
+      },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "1d" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -44,6 +56,7 @@ exports.register = async (req, res) => {
   }
 };
 
+/* ================= LOGIN ================= */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -68,8 +81,18 @@ exports.login = async (req, res) => {
       });
     }
 
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role
+      },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "1d" }
+    );
+
     res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         id: user._id,
         name: user.name,

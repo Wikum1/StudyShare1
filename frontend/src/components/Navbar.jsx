@@ -13,14 +13,15 @@ export default function Navbar() {
       <div className="navbar-container">
         {/* Logo */}
         {/* Logo */}
-<Link to="/" className="logo">
-  <img src={logo} alt="StudyShare Logo" />
-</Link>
+        <Link to="/" className="logo">
+          <img src={logo} alt="StudyShare Logo" />
+        </Link>
 
         {/* Center Links */}
         <div className={`nav-links ${menuOpen ? "active" : ""}`}>
-          
-          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/" end>
+            Home
+          </NavLink>
           <NavLink to="/resources">Resources</NavLink>
           <NavLink to="/planner">Planner</NavLink>
           <NavLink to="/forum">Forum</NavLink>

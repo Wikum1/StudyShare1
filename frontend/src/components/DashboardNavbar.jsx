@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./DashboardNavbar.css";
 import logo from "../assets/logo.png";
 
@@ -18,7 +19,9 @@ export default function DashboardNavbar() {
       <div className="dashboard-left">
 
         <div className="dashboard-logo">
-          <img src={logo} alt="StudyShare Logo" />
+           <Link to="/">
+        <img src={logo} alt="StudyShare Logo" />
+      </Link>
          
         </div>
 
@@ -27,18 +30,22 @@ export default function DashboardNavbar() {
           <NavLink to="/dashboard" end>
             Dashboard
           </NavLink>
+           
+          <NavLink to="/dashboard/wall">
+            Wall
+          </NavLink>
 
           <NavLink to="/dashboard/my-resources">
             My Resources
           </NavLink>
 
-          <NavLink to="/dashboard/upload">
-            Upload
+          <NavLink to="/dashboard/planner">
+            Planner
           </NavLink>
 
-          <NavLink to="/dashboard/profile">
+          {/* <NavLink to="/dashboard/profile">
             Profile
-          </NavLink>
+          </NavLink> */}
 
         </div>
 
