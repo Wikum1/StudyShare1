@@ -12,6 +12,7 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -22,7 +23,7 @@ export default function RegisterPage() {
     setError("");
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -30,19 +31,16 @@ export default function RegisterPage() {
     const email = form.email.trim().toLowerCase();
     const password = form.password;
 
-    // Required fields validation
     if (!name || !email || !password) {
       setError("Please fill all fields");
       return;
     }
 
-    // Name validation
     if (name.length < 3) {
       setError("Full Name must be at least 3 characters");
       return;
     }
 
-    // SLIIT email validation
     const emailRegex = /^it\d{8}@my\.sliit\.lk$/;
 
     if (!emailRegex.test(email)) {
@@ -50,23 +48,46 @@ export default function RegisterPage() {
       return;
     }
 
-    // Password validation
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
 
-    /* TEMP REGISTER */
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name,
-        email,
-        password
-      })
-    );
+    try {
+      setLoading(true);
 
-    navigate("/dashboard");
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Registration failed");
+        return;
+      }
+
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+
+      if (data.user.role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError("Server error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,7 +127,9 @@ export default function RegisterPage() {
             required
           />
 
-          <button type="submit">Create Account</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
         </form>
 
         <p className="auth-switch">
