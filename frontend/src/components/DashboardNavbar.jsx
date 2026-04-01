@@ -24,11 +24,9 @@ export default function DashboardNavbar() {
       <div className="dashboard-left">
 
         <div className="dashboard-logo">
-           <Link to="/">
-        <img src={logo} alt="StudyShare Logo" />
-      </Link>
-         
-          <img src={logo} alt="StudyShare Logo" />
+          <Link to="/">
+            <img src={logo} alt="StudyShare Logo" />
+          </Link>
         </div>
 
         <div className="dashboard-links">
@@ -45,8 +43,8 @@ export default function DashboardNavbar() {
             My Resources
           </NavLink>
 
-          <NavLink to="/dashboard/planner">
-            Planner
+          <NavLink to="/dashboard/study-planner">
+            Study Planner
           </NavLink>
 
           {/* <NavLink to="/dashboard/profile">

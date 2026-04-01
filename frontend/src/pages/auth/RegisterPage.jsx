@@ -89,8 +89,9 @@ export default function RegisterPage() {
         return;
       }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
+      // Merge token into user object
+      const userWithToken = { ...data.user, token: data.token };
+      localStorage.setItem("user", JSON.stringify(userWithToken));
 
       if (data.user.role === "admin") {
         navigate("/admin-dashboard");
@@ -144,7 +145,6 @@ export default function RegisterPage() {
           <button type="submit" disabled={loading}>
             {loading ? "Creating Account..." : "Create Account"}
           </button>
-          <button type="submit">Create Account</button>
         </form>
 
         <p className="auth-switch">
