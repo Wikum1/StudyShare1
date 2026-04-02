@@ -1,0 +1,165 @@
+/* PAGE BACKGROUND */
+
+.upload-page{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#eef2f7,#f9fbfd);
+  padding:40px 20px;
+}
+
+/* CARD */
+
+.upload-card{
+  width:100%;
+  max-width:520px;
+  background:white;
+  border-radius:16px;
+  padding:40px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.08);
+  animation:fadeIn 0.5s ease;
+}
+
+/* TITLE */
+
+.upload-title{
+  text-align:center;
+  margin-bottom:6px;
+}
+
+.upload-subtitle{
+  text-align:center;
+  color:#666;
+  font-size:14px;
+  margin-bottom:30px;
+}
+
+/* ERROR */
+
+.upload-error{
+  background:#ffe5e5;
+  color:#d60000;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:20px;
+  text-align:center;
+}
+
+/* FORM */
+
+.upload-form{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+}
+
+.form-group label{
+  margin-bottom:6px;
+  font-weight:500;
+  font-size:14px;
+}
+
+/* INPUTS */
+
+.upload-form input,
+.upload-form textarea{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+  transition:0.25s;
+}
+
+.upload-form textarea{
+  resize:none;
+  height:100px;
+}
+
+.upload-form input:focus,
+.upload-form textarea:focus{
+  border-color:#4CAF50;
+  outline:none;
+  box-shadow:0 0 0 2px rgba(76,175,80,0.15);
+}
+
+/* FILE UPLOAD */
+
+.file-upload{
+  position:relative;
+  border:2px dashed #ccc;
+  border-radius:10px;
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.file-upload:hover{
+  border-color:#4CAF50;
+  background:#f8fff9;
+}
+
+.file-upload input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
+.file-upload span{
+  font-size:14px;
+  color:#555;
+}
+
+/* BUTTON */
+
+.upload-btn{
+  margin-top:10px;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#4CAF50;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.25s;
+}
+
+.upload-btn:hover{
+  background:#43a047;
+  transform:translateY(-2px);
+}
+
+.upload-btn:disabled{
+  background:#9ccc9c;
+  cursor:not-allowed;
+}
+
+/* ANIMATION */
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+.upload-card{
+  padding:30px 20px;
+}
+
+}
