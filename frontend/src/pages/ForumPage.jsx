@@ -10,7 +10,7 @@ export default function ForumPage() {
         <div className="forum-hero-content">
           <h1>💬 Discussion Forum</h1>
           <p>
-            Ask questions, kisara share knowledge and collaborate with fellow students
+            Ask questions, share knowledge and collaborate with fellow students
             in academic discussions.
           </p>
 
