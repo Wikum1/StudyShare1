@@ -26,9 +26,9 @@ import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
-import FeedWallPage from "./pages/feed/feedWallPage";
-import FeedCreatePost from "./pages/feed/feedCreatePost";
-import FeedSearchPage from "./pages/feed/feedSearchPage";
+import FeedWallPage from "./pages/feed/feedWallPage.jsx";
+import FeedCreatePost from "./pages/feed/feedCreatePost.jsx";
+import FeedSearchPage from "./pages/feed/feedSearchPage.jsx";
 
 /* PUBLIC LAYOUT */
 function PublicLayout({ children }) {
