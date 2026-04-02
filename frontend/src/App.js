@@ -26,6 +26,7 @@ import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
+import FeedWallPage from "./pages/dashboard/feedWallPage";
 
 /* PUBLIC LAYOUT */
 function PublicLayout({ children }) {
@@ -120,6 +121,15 @@ function App() {
           element={
             <DashboardLayout>
               <DashboardHome />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/wall"
+          element={
+            <DashboardLayout>
+              <FeedWallPage />
             </DashboardLayout>
           }
         />

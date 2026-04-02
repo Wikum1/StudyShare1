@@ -8,6 +8,7 @@ const adminResourceRoutes = require("./routes/admin/adminResource.routes");
 const contactRoutes = require("./routes/contactRoutes");
 const authRoutes = require("./routes/auth.routes");
 const studyPlanRoutes = require("./routes/studyPlan.routes");
+const feedWallRoutes = require("./routes/feedWall.routes");
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use("/api/admin/resources", adminResourceRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/study-plans", studyPlanRoutes); // ✅ includes nested task routes
+app.use("/api/wall", feedWallRoutes);
 
 module.exports = app;
