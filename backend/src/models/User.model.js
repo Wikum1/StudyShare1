@@ -27,7 +27,29 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
       trim: true
-    }
+    },
+    // Profile Information
+    avatar: {
+      type: String,
+      default: null
+    },
+    bio: {
+      type: String,
+      default: "",
+      maxlength: 500
+    },
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ]
   },
   { timestamps: true }
 );

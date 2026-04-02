@@ -27,6 +27,7 @@ import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
+import WallPage from "./pages/WallPage";
 
 /* PUBLIC LAYOUT */
 function PublicLayout({ children }) {
@@ -159,6 +160,15 @@ function App() {
           element={
             <DashboardLayout>
               <StudyCalendar />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/wall"
+          element={
+            <DashboardLayout>
+              <WallPage />
             </DashboardLayout>
           }
         />
