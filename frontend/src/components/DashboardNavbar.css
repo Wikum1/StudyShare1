@@ -110,7 +110,7 @@
 /* LOGOUT BUTTON */
 
 .logout-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #059669, #047857);
   color: white;
   border: none;
   padding: 10px 18px;
@@ -119,13 +119,13 @@
   font-size: 13px;
   font-weight: 600;
   transition: all 0.25s ease;
-  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 8px 18px rgba(5, 150, 105, 0.22);
 }
 
 .logout-btn:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  box-shadow: 0 12px 20px rgba(220, 38, 38, 0.28);
+  background: linear-gradient(135deg, #047857, #065f46);
+  box-shadow: 0 12px 20px rgba(4, 120, 87, 0.28);
 }
 
 /* OPTIONAL MENU BUTTON FOR MOBILE */

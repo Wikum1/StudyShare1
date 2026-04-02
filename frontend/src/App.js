@@ -26,7 +26,9 @@ import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
-import FeedWallPage from "./pages/dashboard/feedWallPage";
+import FeedWallPage from "./pages/feed/feedWallPage";
+import FeedCreatePost from "./pages/feed/feedCreatePost";
+import FeedSearchPage from "./pages/feed/feedSearchPage";
 
 /* PUBLIC LAYOUT */
 function PublicLayout({ children }) {
@@ -130,6 +132,24 @@ function App() {
           element={
             <DashboardLayout>
               <FeedWallPage />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/wall/feedCreatePost"
+          element={
+            <DashboardLayout>
+              <FeedCreatePost />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/wall/feedSearch"
+          element={
+            <DashboardLayout>
+              <FeedSearchPage />
             </DashboardLayout>
           }
         />

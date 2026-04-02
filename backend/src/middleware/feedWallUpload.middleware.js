@@ -42,7 +42,7 @@ const multerUpload = multer({
 });
 
 const upload = multerUpload.fields([
-  { name: "photos", maxCount: 5 },
+  { name: "photos", maxCount: 12 },
   { name: "video", maxCount: 1 },
 ]);
 

@@ -13,6 +13,7 @@ router.post("/posts", upload, controller.createPost);
 router.post("/posts/:postId/like", controller.toggleLike);
 router.post("/posts/:postId/save", controller.toggleSave);
 router.post("/posts/:postId/comments", controller.addComment);
+router.delete("/posts/:postId", controller.deletePost);
 
 module.exports = router;
 

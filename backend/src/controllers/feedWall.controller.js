@@ -220,3 +220,26 @@ exports.addComment = async (req, res) => {
   }
 };
 
+exports.deletePost = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authorized" });
+
+    const postId = req.params.postId;
+    const post = await WallPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    // Only the author can delete their own post
+    if (post.author?.toString?.() !== userId.toString()) {
+      return res.status(403).json({ message: "You can only delete your own posts" });
+    }
+
+    await post.deleteOne();
+    return res.status(200).json({ postId: post._id });
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message || "Server error while deleting post",
+    });
+  }
+};
+

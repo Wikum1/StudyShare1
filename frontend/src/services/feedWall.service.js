@@ -33,5 +33,8 @@ const toggleSave = (postId) =>
 const addComment = (postId, data) =>
   axios.post(`${API}/posts/${postId}/comments`, data, getAuthConfig()).then((r) => r.data);
 
-export default { getPosts, createPost, toggleLike, toggleSave, addComment };
+const deletePost = (postId) =>
+  axios.delete(`${API}/posts/${postId}`, getAuthConfig()).then((r) => r.data);
+
+export default { getPosts, createPost, toggleLike, toggleSave, addComment, deletePost };
 
