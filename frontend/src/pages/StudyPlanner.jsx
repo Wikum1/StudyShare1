@@ -48,6 +48,7 @@ export default function StudyPlanner() {
   const [planNameError, setPlanNameError] = useState("");
 
   const [isImportant, setIsImportant] = useState(false);
+  const [priority, setPriority] = useState("medium");
   const [hasReminder, setHasReminder] = useState(false);
   const [reminderDate, setReminderDate] = useState("");
   const [reminderTime, setReminderTime] = useState("");
@@ -390,6 +391,7 @@ export default function StudyPlanner() {
       title: cleanedTaskName,
       date: taskDate,
       time: taskTime,
+      priority: priority,
       isImportant: Boolean(isImportant),
       hasReminder: Boolean(hasReminder),
       reminderDateTime: hasReminder ? createReminderDateTime(reminderDate, reminderTime) : null,
@@ -407,6 +409,7 @@ export default function StudyPlanner() {
       setTaskInput("");
       setTaskDate("");
       setTaskTime("");
+      setPriority("medium");
       setIsImportant(false);
       setHasReminder(false);
       setReminderDate("");
@@ -707,6 +710,15 @@ export default function StudyPlanner() {
                     }}
                   />
                   Add Reminder
+                </label>
+
+                <label className="priority-label">
+                  Priority:
+                  <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
                 </label>
               </div>
 

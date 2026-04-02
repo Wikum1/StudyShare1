@@ -9,7 +9,9 @@ const adminResourceRoutes = require("./routes/admin/adminResource.routes");
 const contactRoutes = require("./routes/contactRoutes");
 const authRoutes = require("./routes/auth.routes");
 const studyPlanRoutes = require("./routes/studyPlan.routes");
+const reminderRoutes = require("./routes/reminder.routes");
 const reminderScheduler = require("./services/reminderScheduler");
+const { verifyEmailConfig } = require("./services/emailService");
 
 const app = express();
 
@@ -28,6 +30,8 @@ mongoose
     console.log("MongoDB Connected");
     // Initialize reminder scheduler after DB connection
     reminderScheduler.initialize();
+    // Verify email service configuration
+    verifyEmailConfig();
   })
   .catch((err) => console.log(err));
 
@@ -37,5 +41,6 @@ app.use("/api/admin/resources", adminResourceRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/study-plans", studyPlanRoutes); // ✅ includes nested task routes
+app.use("/api/reminders", reminderRoutes); // ✅ reminder notifications
 
 module.exports = app;

@@ -2,6 +2,7 @@ const Schedule = require("node-schedule");
 const Task = require("../models/Task.model");
 const StudyPlan = require("../models/StudyPlan.model");
 const User = require("../models/User.model");
+const reminderService = require("./reminderService");
 
 class ReminderScheduler {
   constructor() {
@@ -85,12 +86,12 @@ class ReminderScheduler {
   }
 
   /**
-   * Trigger the reminder - send WhatsApp message
+   * Trigger the reminder - create an in-app reminder record
    * @param {String} taskId - Task ID to trigger reminder for
    */
   async triggerReminder(taskId) {
     try {
-      // Fetch fresh task data with populated plan and user
+      // Fetch fresh task data with populated plan
       const task = await Task.findById(taskId).populate({
         path: "plan",
         populate: {
@@ -112,24 +113,30 @@ class ReminderScheduler {
         return;
       }
 
-      console.log(`Plan found: ${plan._id}, User ref: ${plan.user}`);
-
       const user = plan.user;
       if (!user) {
-        console.error(`⚠️  User not found in plan ${plan._id}. Plan user reference: ${plan.user}`);
-        // Try fetching user directly from plan without populate
-        const freshPlan = await StudyPlan.findById(plan._id);
-        console.error(`Fresh plan user field: ${freshPlan.user}`);
+        console.error(`User not found for plan ${plan._id}`);
         return;
       }
 
-      console.log(`✅ Reminder triggered for task: ${task.title}`);
+      // Create in-app reminder record
+      const reminder = await reminderService.createReminder(
+        user._id,
+        task._id,
+        {
+          title: task.title,
+          date: task.date,
+          time: task.time,
+          reminderDateTime: task.reminderDateTime,
+          planTitle: plan.title,
+        }
+      );
 
-      // Mark reminder as sent
+      // Mark reminder as sent in Task model
       task.reminderSent = true;
       await task.save();
 
-      console.log(`✅ Reminder completed for task: ${task.title}`);
+      console.log(`✅ Reminder created for task: ${task.title}`);
     } catch (error) {
       console.error("Error triggering reminder:", error);
     }

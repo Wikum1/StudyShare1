@@ -142,6 +142,7 @@ const addTask = async (req, res) => {
 
     const hasReminder = req.body.hasReminder === true;
     const isImportant = req.body.isImportant === true;
+    const priority = ["high", "medium", "low"].includes(req.body.priority) ? req.body.priority : "medium";
 
     const reminderValidation = validateReminder({
       hasReminder,
@@ -171,6 +172,7 @@ const addTask = async (req, res) => {
       title: titleValidation.cleanedTitle,
       date: dateValidation.cleanedDate,
       time: timeValidation.cleanedTime,
+      priority,
       isImportant,
       hasReminder,
       reminderDateTime: reminderValidation.cleanedReminderDateTime,
@@ -265,6 +267,7 @@ const updateTask = async (req, res) => {
     let cleanedTitle = task.title;
     let cleanedDate = task.date;
     let cleanedTime = task.time;
+    let priority = task.priority;
     let isImportant = task.isImportant;
     let hasReminder = task.hasReminder;
     let reminderDateTime = task.reminderDateTime;
@@ -293,6 +296,12 @@ const updateTask = async (req, res) => {
       cleanedTime = timeValidation.cleanedTime;
     }
 
+    if (req.body.priority !== undefined) {
+      if (["high", "medium", "low"].includes(req.body.priority)) {
+        priority = req.body.priority;
+      }
+    }
+
     if (req.body.isImportant !== undefined) {
       isImportant = req.body.isImportant === true;
     }
@@ -305,15 +314,24 @@ const updateTask = async (req, res) => {
       reminderDateTime = req.body.reminderDateTime;
     }
 
-    const reminderValidation = validateReminder({
-      hasReminder,
-      reminderDateTime,
-      taskDate: cleanedDate,
-      taskTime: cleanedTime,
-    });
+    // Only validate reminder if reminder fields are actually present in the request body
+    // This prevents validation errors when only updating other fields like status
+    const hasReminderFieldInRequest = req.body.hasReminder !== undefined || req.body.reminderDateTime !== undefined;
 
-    if (!reminderValidation.valid) {
-      return res.status(400).json({ message: reminderValidation.message });
+    if (hasReminderFieldInRequest) {
+      const reminderValidation = validateReminder({
+        hasReminder,
+        reminderDateTime,
+        taskDate: cleanedDate,
+        taskTime: cleanedTime,
+      });
+
+      if (!reminderValidation.valid) {
+        return res.status(400).json({ message: reminderValidation.message });
+      }
+
+      // Update reminderDateTime only if it was validated
+      reminderDateTime = reminderValidation.cleanedReminderDateTime;
     }
 
     const conflictingTask = await Task.findOne({
@@ -332,9 +350,10 @@ const updateTask = async (req, res) => {
     task.title = cleanedTitle;
     task.date = cleanedDate;
     task.time = cleanedTime;
+    task.priority = priority;
     task.isImportant = isImportant;
     task.hasReminder = hasReminder;
-    task.reminderDateTime = reminderValidation.cleanedReminderDateTime;
+    task.reminderDateTime = reminderDateTime;
 
     if (req.body.status !== undefined) task.status = req.body.status;
 
