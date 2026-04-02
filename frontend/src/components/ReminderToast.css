@@ -1,0 +1,142 @@
+/* Toast Container - Top Right Corner */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+}
+
+/* Individual Toast Item */
+.toast-item {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(500px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast Inner - Main Content */
+.toast-inner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-left: 5px solid #ff6b6b;
+}
+
+/* Toast Icon */
+.toast-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+/* Toast Body - Text Content */
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  word-break: break-word;
+}
+
+.toast-subtitle {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  opacity: 0.9;
+}
+
+.toast-time {
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Toast Actions */
+.toast-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Toast Button */
+.toast-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toast-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.toast-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .toast-inner {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .toast-icon {
+    font-size: 28px;
+  }
+
+  .toast-title {
+    font-size: 14px;
+  }
+
+  .toast-subtitle {
+    font-size: 12px;
+  }
+
+  .toast-time {
+    font-size: 11px;
+  }
+
+  .toast-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+

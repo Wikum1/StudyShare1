@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 
 /* Dashboard Components */
 import DashboardNavbar from "./components/DashboardNavbar";
+import ReminderToast from "./components/ReminderToast";
 
 /* Public Pages */
 import Home from "./pages/Home";
@@ -31,6 +32,7 @@ import StudyCalendar from "./pages/StudyCalendar";
 function PublicLayout({ children }) {
   return (
     <>
+      <ReminderToast />
       <Navbar />
       <main style={{ minHeight: "80vh" }}>{children}</main>
       <Footer />
@@ -42,6 +44,7 @@ function PublicLayout({ children }) {
 function DashboardLayout({ children }) {
   return (
     <>
+      <ReminderToast />
       <DashboardNavbar />
       <main style={{ minHeight: "80vh", padding: "30px" }}>{children}</main>
     </>

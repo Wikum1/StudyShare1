@@ -48,6 +48,7 @@ export default function StudyPlanner() {
   const [planNameError, setPlanNameError] = useState("");
 
   const [isImportant, setIsImportant] = useState(false);
+  const [priority, setPriority] = useState("medium");
   const [hasReminder, setHasReminder] = useState(false);
   const [reminderDate, setReminderDate] = useState("");
   const [reminderTime, setReminderTime] = useState("");
@@ -198,8 +199,12 @@ export default function StudyPlanner() {
   const validateTaskTime = (time) => {
     if (!time) return "Task time is required";
     if (!/^\d{2}:\d{2}$/.test(time)) return "Task time must be in HH:MM format";
-    if (!timeSlots.includes(time))
-      return "Task time must match an available planner time slot";
+    
+    const [hours, minutes] = time.split(":").map(Number);
+    
+    if (hours < 0 || hours > 23) return "Hour must be between 00 and 23";
+    if (minutes < 0 || minutes > 59) return "Minutes must be between 00 and 59";
+    
     return "";
   };
 
@@ -242,15 +247,15 @@ export default function StudyPlanner() {
     const [hours, minutes] = reminderTime.split(":").map(Number);
     const reminder = new Date(year, month - 1, day, hours, minutes);
 
-    const now = new Date();
-    if (reminder < now) {
-      return "Reminder time cannot be in the past";
-    }
-
     // Create task datetime
     const [taskYear, taskMonth, taskDay] = taskDate.split("-").map(Number);
     const [taskHours, taskMinutes] = taskTime.split(":").map(Number);
     const taskDateTime = new Date(taskYear, taskMonth - 1, taskDay, taskHours, taskMinutes);
+
+    // Validate reminder is before task
+    if (reminder >= taskDateTime) {
+      return "Reminder must be before the task time";
+    }
 
     const sixHoursBeforeTask = new Date(
       taskDateTime.getTime() - 6 * 60 * 60 * 1000,
@@ -386,6 +391,7 @@ export default function StudyPlanner() {
       title: cleanedTaskName,
       date: taskDate,
       time: taskTime,
+      priority: priority,
       isImportant: Boolean(isImportant),
       hasReminder: Boolean(hasReminder),
       reminderDateTime: hasReminder ? createReminderDateTime(reminderDate, reminderTime) : null,
@@ -403,6 +409,7 @@ export default function StudyPlanner() {
       setTaskInput("");
       setTaskDate("");
       setTaskTime("");
+      setPriority("medium");
       setIsImportant(false);
       setHasReminder(false);
       setReminderDate("");
@@ -703,6 +710,15 @@ export default function StudyPlanner() {
                     }}
                   />
                   Add Reminder
+                </label>
+
+                <label className="priority-label">
+                  Priority:
+                  <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
                 </label>
               </div>
 

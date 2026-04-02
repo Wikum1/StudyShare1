@@ -7,6 +7,7 @@ import {
   deletePlan,
   deleteTask,
 } from "../services/studyPlanService";
+import { generateDayPlannerPDF } from "../utils/pdfGenerator";
 
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -81,6 +82,7 @@ export default function StudyCalendar() {
     taskTimeHour: "9",
     taskTimeMinute: "00",
     taskTimePeriod: "AM",
+    priority: "medium",
     isImportant: false,
     hasReminder: false,
     reminderDate: "",
@@ -200,6 +202,7 @@ export default function StudyCalendar() {
         title: cleanedTitle,
         date: formatDateToYMD(currentDate),
         time: time24,
+        priority: taskFormData.priority,
         isImportant: taskFormData.isImportant,
         hasReminder: taskFormData.hasReminder,
         reminderDateTime: taskFormData.hasReminder 
@@ -221,6 +224,7 @@ export default function StudyCalendar() {
         taskTimeHour: "9",
         taskTimeMinute: "00",
         taskTimePeriod: "AM",
+        priority: "medium",
         isImportant: false,
         hasReminder: false,
         reminderDate: "",
@@ -308,21 +312,38 @@ export default function StudyCalendar() {
       );
 
       if (planContainingTask) {
-        await updateTask(planContainingTask._id, task._id, updateData);
-        await fetchPlans();
+        // Optimistically update UI immediately
+        const updatedTask = { ...task, ...updateData };
         
-        // Update modal tasks if still open
+        // Update modal tasks immediately for instant feedback
         if (showModalTaskDetails) {
-          const dateStr = formatDateToYMD(modalSelectedDate);
-          const updatedTasks = getAllTasksForDate(dateStr);
-          setModalTasks(updatedTasks);
+          setModalTasks(
+            modalTasks.map((t) => (t._id === task._id ? updatedTask : t))
+          );
         }
+        
+        // Optimistically update plans state
+        const updatedPlan = {
+          ...planContainingTask,
+          tasks: planContainingTask.tasks.map((t) =>
+            t._id === task._id ? updatedTask : t
+          ),
+        };
+        setPlans(plans.map((p) => (p._id === planContainingTask._id ? updatedPlan : p)));
+
+        // Send update to backend
+        await updateTask(planContainingTask._id, task._id, updateData);
+        
+        // Refresh in background to sync with server
+        await fetchPlans();
       }
     } catch (err) {
       setError(
         err?.response?.data?.message || `Failed to update task: ${err.message}`
       );
       console.error(err);
+      // Optionally refetch to restore correct state if update failed
+      await fetchPlans();
     }
   };
 
@@ -412,14 +433,24 @@ export default function StudyCalendar() {
             <h2>📅 {currentDate.toLocaleDateString("en-US", { weekday: "long" })}</h2>
             <p className="day-view-date">{dateStr}</p>
           </div>
-          <button
-            className="add-task-btn"
-            onClick={() => setShowAddTaskModal(true)}
-            disabled={!selectedPlan}
-            title={selectedPlan ? "Add task to this day" : "Please select a study plan first"}
-          >
-            + Add Task
-          </button>
+          <div className="day-header-buttons">
+            <button
+              className="add-task-btn"
+              onClick={() => setShowAddTaskModal(true)}
+              disabled={!selectedPlan}
+              title={selectedPlan ? "Add task to this day" : "Please select a study plan first"}
+            >
+              + Add Task
+            </button>
+            <button
+              className="download-btn"
+              onClick={() => generateDayPlannerPDF(dateStr, getAllTasksForDate(dateStr), selectedPlan?.title)}
+              disabled={!selectedPlan}
+              title={selectedPlan ? "Download day planner as PDF" : "Please select a study plan first"}
+            >
+              📥 Download PDF
+            </button>
+          </div>
         </div>
 
         <div className="day-timeline">
@@ -467,6 +498,18 @@ export default function StudyCalendar() {
 
     return (
       <div className="week-view-container">
+        <div className="week-view-header">
+          <h2>📅 Week View</h2>
+          <button
+            className="add-task-btn"
+            onClick={() => setShowAddTaskModal(true)}
+            disabled={!selectedPlan}
+            title={selectedPlan ? "Add task to this week" : "Please select a study plan first"}
+          >
+            + Add Task
+          </button>
+        </div>
+
         <div className="week-grid">
           <div className="week-header">
             <div className="week-time-column"></div>
@@ -551,6 +594,14 @@ export default function StudyCalendar() {
       <div className="month-view-container">
         <div className="month-header">
           <h2>{monthNames[month]} {year}</h2>
+          <button
+            className="add-task-btn"
+            onClick={() => setShowAddTaskModal(true)}
+            disabled={!selectedPlan}
+            title={selectedPlan ? "Add task to this month" : "Please select a study plan first"}
+          >
+            + Add Task
+          </button>
         </div>
 
         <div className="month-grid">
@@ -825,6 +876,24 @@ export default function StudyCalendar() {
                   />
                   Mark as Important ⭐
                 </label>
+              </div>
+
+              <div className="form-group">
+                <label>Priority Level</label>
+                <select
+                  value={taskFormData.priority}
+                  onChange={(e) =>
+                    setTaskFormData({
+                      ...taskFormData,
+                      priority: e.target.value
+                    })
+                  }
+                  className="priority-select"
+                >
+                  <option value="low">🟢 Low</option>
+                  <option value="medium">🟡 Medium</option>
+                  <option value="high">🔴 High</option>
+                </select>
               </div>
 
               <div className="form-group checkbox-group">

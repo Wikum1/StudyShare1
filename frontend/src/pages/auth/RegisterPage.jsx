@@ -8,7 +8,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    phoneNumber: ""
   });
 
   const [error, setError] = useState("");
@@ -30,9 +31,10 @@ export default function RegisterPage() {
     const name = form.name.trim();
     const email = form.email.trim().toLowerCase();
     const password = form.password;
+    const phoneNumber = form.phoneNumber.trim();
 
     // Required fields validation
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phoneNumber) {
       setError("Please fill all fields");
       return;
     }
@@ -57,13 +59,21 @@ export default function RegisterPage() {
       return;
     }
 
+    // Phone number validation (WhatsApp format)
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ""))) {
+      setError("Phone number must be 10-15 digits (e.g., +94771234567)");
+      return;
+    }
+
     /* TEMP REGISTER */
     localStorage.setItem(
       "user",
       JSON.stringify({
         name,
         email,
-        password
+        password,
+        phoneNumber
       })
     );
 
@@ -78,7 +88,8 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name,
           email,
-          password
+          password,
+          phoneNumber
         })
       });
 
@@ -139,6 +150,15 @@ export default function RegisterPage() {
             value={form.password}
             onChange={handleChange}
             minLength={6}
+            required
+          />
+
+          <input
+            type="tel"
+            name="phoneNumber"
+            placeholder="Phone Number (e.g., +94771234567)"
+            value={form.phoneNumber}
+            onChange={handleChange}
             required
           />
 

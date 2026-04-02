@@ -1,12 +1,6 @@
 const Task = require("../models/Task.model");
 const StudyPlan = require("../models/StudyPlan.model");
-
-const ALLOWED_TIME_SLOTS = [
-  "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
-];
+const reminderScheduler = require("../services/reminderScheduler");
 
 const validateTaskTitle = (title) => {
   const cleanedTitle = title?.replace(/\s+/g, " ").trim();
@@ -74,8 +68,14 @@ const validateTaskTime = (time) => {
     return { valid: false, message: "Task time must be in HH:MM format" };
   }
 
-  if (!ALLOWED_TIME_SLOTS.includes(time)) {
-    return { valid: false, message: "Task time must match an available planner time slot" };
+  const [hours, minutes] = time.split(":").map(Number);
+
+  if (hours < 0 || hours > 23) {
+    return { valid: false, message: "Hour must be between 00 and 23" };
+  }
+
+  if (minutes < 0 || minutes > 59) {
+    return { valid: false, message: "Minutes must be between 00 and 59" };
   }
 
   return { valid: true, cleanedTime: time };
@@ -142,6 +142,7 @@ const addTask = async (req, res) => {
 
     const hasReminder = req.body.hasReminder === true;
     const isImportant = req.body.isImportant === true;
+    const priority = ["high", "medium", "low"].includes(req.body.priority) ? req.body.priority : "medium";
 
     const reminderValidation = validateReminder({
       hasReminder,
@@ -171,6 +172,7 @@ const addTask = async (req, res) => {
       title: titleValidation.cleanedTitle,
       date: dateValidation.cleanedDate,
       time: timeValidation.cleanedTime,
+      priority,
       isImportant,
       hasReminder,
       reminderDateTime: reminderValidation.cleanedReminderDateTime,
@@ -179,6 +181,11 @@ const addTask = async (req, res) => {
 
     plan.tasks.push(task._id);
     await plan.save();
+
+    // Schedule reminder if enabled
+    if (hasReminder) {
+      await reminderScheduler.addReminder(task);
+    }
 
     const updatedPlan = await StudyPlan.findOne({
       _id: req.params.planId,
@@ -260,6 +267,7 @@ const updateTask = async (req, res) => {
     let cleanedTitle = task.title;
     let cleanedDate = task.date;
     let cleanedTime = task.time;
+    let priority = task.priority;
     let isImportant = task.isImportant;
     let hasReminder = task.hasReminder;
     let reminderDateTime = task.reminderDateTime;
@@ -288,6 +296,12 @@ const updateTask = async (req, res) => {
       cleanedTime = timeValidation.cleanedTime;
     }
 
+    if (req.body.priority !== undefined) {
+      if (["high", "medium", "low"].includes(req.body.priority)) {
+        priority = req.body.priority;
+      }
+    }
+
     if (req.body.isImportant !== undefined) {
       isImportant = req.body.isImportant === true;
     }
@@ -300,15 +314,24 @@ const updateTask = async (req, res) => {
       reminderDateTime = req.body.reminderDateTime;
     }
 
-    const reminderValidation = validateReminder({
-      hasReminder,
-      reminderDateTime,
-      taskDate: cleanedDate,
-      taskTime: cleanedTime,
-    });
+    // Only validate reminder if reminder fields are actually present in the request body
+    // This prevents validation errors when only updating other fields like status
+    const hasReminderFieldInRequest = req.body.hasReminder !== undefined || req.body.reminderDateTime !== undefined;
 
-    if (!reminderValidation.valid) {
-      return res.status(400).json({ message: reminderValidation.message });
+    if (hasReminderFieldInRequest) {
+      const reminderValidation = validateReminder({
+        hasReminder,
+        reminderDateTime,
+        taskDate: cleanedDate,
+        taskTime: cleanedTime,
+      });
+
+      if (!reminderValidation.valid) {
+        return res.status(400).json({ message: reminderValidation.message });
+      }
+
+      // Update reminderDateTime only if it was validated
+      reminderDateTime = reminderValidation.cleanedReminderDateTime;
     }
 
     const conflictingTask = await Task.findOne({
@@ -327,13 +350,17 @@ const updateTask = async (req, res) => {
     task.title = cleanedTitle;
     task.date = cleanedDate;
     task.time = cleanedTime;
+    task.priority = priority;
     task.isImportant = isImportant;
     task.hasReminder = hasReminder;
-    task.reminderDateTime = reminderValidation.cleanedReminderDateTime;
+    task.reminderDateTime = reminderDateTime;
 
     if (req.body.status !== undefined) task.status = req.body.status;
 
     await task.save();
+
+    // Update reminder if changed
+    await reminderScheduler.updateReminder(task);
 
     const updatedPlan = await StudyPlan.findOne({
       _id: req.params.planId,
@@ -368,6 +395,9 @@ const deleteTask = async (req, res) => {
     if (task.plan.toString() !== req.params.planId) {
       return res.status(404).json({ message: "Task not found in this plan" });
     }
+
+    // Delete scheduled reminder if any
+    await reminderScheduler.deleteReminder(req.params.taskId);
 
     await Task.findByIdAndDelete(req.params.taskId);
 

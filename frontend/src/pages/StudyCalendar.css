@@ -370,6 +370,19 @@
   padding: 20px 24px;
   border-bottom: 2px solid #e2e8f0;
   background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.day-header-content {
+  flex: 1;
+}
+
+.day-header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .day-view-header h2 {
@@ -774,31 +787,64 @@
   .month-dates {
     min-height: 400px;
   }
+
+  .day-view-header,
+  .week-view-header,
+  .month-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .day-header-buttons {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .day-view-header h2,
+  .week-view-header h2,
+  .month-header h2 {
+    font-size: 18px;
+  }
+
+  .add-task-btn,
+  .download-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-/* ADD TASK BUTTON */
-.day-view-header {
+/* WEEK VIEW HEADER */
+.week-view-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
   border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
 }
 
-.day-header-content {
-  flex: 1;
-}
-
-.day-view-header h2 {
-  margin: 0 0 4px 0;
+.week-view-header h2 {
+  margin: 0;
   font-size: 24px;
   color: #1e293b;
 }
 
-.day-view-date {
+/* MONTH VIEW HEADER */
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
+}
+
+.month-header h2 {
   margin: 0;
-  font-size: 14px;
-  color: #64748b;
+  font-size: 24px;
+  color: #1e293b;
 }
 
 .add-task-btn {
@@ -819,6 +865,28 @@
 }
 
 .add-task-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.download-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+}
+
+.download-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -916,6 +984,29 @@
 
 .form-group input[type=\"text\"]:focus,
 .form-group input[type=\"time\"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.priority-select {
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.priority-select:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.priority-select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);

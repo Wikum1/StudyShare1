@@ -777,6 +777,36 @@ body.dark-mode .react-calendar .react-calendar__month-view__weekdays {
   font-size: 14px;
 }
 
+.priority-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.priority-label select {
+  padding: 6px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #1f2937;
+}
+
+.priority-label select:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.priority-label select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 .task-title-wrap {
   display: flex;
   flex-direction: column;
