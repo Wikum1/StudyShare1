@@ -1,16 +1,15 @@
 const Reaction = require("../models/Reaction.model");
 const Post = require("../models/Post.model");
-const Comment = require("../models/Comment.model");
 
 // ============ ADD REACTION ============
 exports.addReaction = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { type, postId, commentId } = req.body;
+    const { type, postId } = req.body;
 
     // Validate input
-    if (!type || (!postId && !commentId)) {
-      return res.status(400).json({ message: "Type and either postId or commentId are required" });
+    if (!type || !postId) {
+      return res.status(400).json({ message: "Type and postId are required" });
     }
 
     const validTypes = ["like", "love", "haha", "wow", "sad", "angry"];
@@ -18,26 +17,16 @@ exports.addReaction = async (req, res) => {
       return res.status(400).json({ message: "Invalid reaction type" });
     }
 
-    // Check if post or comment exists
-    if (postId) {
-      const post = await Post.findById(postId);
-      if (!post) {
-        return res.status(404).json({ message: "Post not found" });
-      }
-    }
-
-    if (commentId) {
-      const comment = await Comment.findById(commentId);
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
+    // Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
 
     // Check if user already reacted
     const existingReaction = await Reaction.findOne({
       user: userId,
-      ...(postId && { post: postId }),
-      ...(commentId && { comment: commentId })
+      post: postId
     });
 
     if (existingReaction && existingReaction.type === type) {
@@ -53,8 +42,7 @@ exports.addReaction = async (req, res) => {
     const reaction = await Reaction.create({
       type,
       user: userId,
-      ...(postId && { post: postId }),
-      ...(commentId && { comment: commentId })
+      post: postId
     });
 
     const populatedReaction = await reaction.populate("user", "name avatar");
@@ -72,17 +60,13 @@ exports.addReaction = async (req, res) => {
 // ============ GET REACTIONS ============
 exports.getReactions = async (req, res) => {
   try {
-    const { postId, commentId } = req.query;
+    const { postId } = req.query;
 
-    if (!postId && !commentId) {
-      return res.status(400).json({ message: "Either postId or commentId is required" });
+    if (!postId) {
+      return res.status(400).json({ message: "postId is required" });
     }
 
-    const query = {};
-    if (postId) query.post = postId;
-    if (commentId) query.comment = commentId;
-
-    const reactions = await Reaction.find(query)
+    const reactions = await Reaction.find({ post: postId })
       .populate("user", "name avatar email")
       .sort({ createdAt: -1 });
 
@@ -147,7 +131,6 @@ exports.getUserReactions = async (req, res) => {
     const reactions = await Reaction.find({ user: userId })
       .populate("user", "name avatar")
       .populate("post", "title")
-      .populate("comment", "content")
       .sort({ createdAt: -1 })
       .limit(50);
 
