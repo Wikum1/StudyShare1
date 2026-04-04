@@ -14,8 +14,7 @@ const CreatePost = ({ onClose, onPostCreated }) => {
   const [error, setError] = useState("");
 
   const API_BASE = "http://localhost:5000/api";
-  const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = userData?.token;
+  const token = localStorage.getItem("token");
 
   // Handle photo selection
   const handlePhotoSelect = (e) => {

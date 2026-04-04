@@ -20,13 +20,13 @@ export default function ProfileDetailsPage() {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
       const userId = storedUser?.id;
 
       if (!token || !userId) {
@@ -65,8 +65,7 @@ export default function ProfileDetailsPage() {
 
   const handleSave = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
+      const token = localStorage.getItem("token");
 
       const response = await axios.put(
         `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/users/profile/edit`,

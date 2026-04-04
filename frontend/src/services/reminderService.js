@@ -1,13 +1,8 @@
 const API_BASE = process.env.REACT_APP_API_URL || "/api";
 
-// Helper to get token from user object
+// Helper to get token
 const getToken = () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    return user?.token;
-  } catch (error) {
-    return null;
-  }
+  return localStorage.getItem("token");
 };
 
 const reminderService = {

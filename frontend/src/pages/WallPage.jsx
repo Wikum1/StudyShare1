@@ -14,19 +14,18 @@ const WallPage = () => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [selectedTag, setSelectedTag] = useState("");
-  const [refreshSidebar, setRefreshSidebar] = useState(0);
   const [showSavedPosts, setShowSavedPosts] = useState(false);
 
   const location = useLocation();
   const API_BASE = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = userData?.token;
 
   // Fetch posts
   useEffect(() => {
     fetchPosts();
-  }, [page, sortBy, searchQuery, selectedTag, showSavedPosts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, sortBy, searchQuery, showSavedPosts]);
 
   // Scroll to post when navigated from notification
   useEffect(() => {
@@ -51,8 +50,7 @@ const WallPage = () => {
         page,
         limit: 10,
         sortBy,
-        ...(searchQuery && { search: searchQuery }),
-        ...(selectedTag && { tag: selectedTag })
+        ...(searchQuery && { search: searchQuery })
       };
 
       let url = `${API_BASE}/posts`;

@@ -15,8 +15,8 @@ const Wall = () => {
   const [selectedTag, setSelectedTag] = useState("");
 
   const API_BASE = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = userData?.token;
   const userId = userData?._id;
 
   // Fetch posts

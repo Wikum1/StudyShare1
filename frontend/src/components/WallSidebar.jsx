@@ -13,8 +13,8 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
   const [loading, setLoading] = useState(false);
 
   const API_BASE = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = storedUser?.token;
   const userId = storedUser?._id || storedUser?.id;
 
   // Check authentication

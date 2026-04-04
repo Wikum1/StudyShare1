@@ -340,7 +340,6 @@ export default function MyResources() {
 
               return (
                 <div className="myr-card" key={r._id}>
-                <div id={`resource-${r._id}`} className="resource-card" key={r._id}>
                   <div
                     className={`myr-preview ${
                       fileType === "video" ? "video-preview" : "doc-preview"
