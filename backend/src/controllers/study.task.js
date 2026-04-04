@@ -1,6 +1,9 @@
 const Task = require("../models/Task.model");
 const StudyPlan = require("../models/StudyPlan.model");
+const User = require("../models/User.model");
+const Notification = require("../models/Notification.model");
 const reminderScheduler = require("../services/reminderScheduler");
+const { createNotification } = require("./notification.controller");
 
 const validateTaskTitle = (title) => {
   const cleanedTitle = title?.replace(/\s+/g, " ").trim();
@@ -185,6 +188,34 @@ const addTask = async (req, res) => {
     // Schedule reminder if enabled
     if (hasReminder) {
       await reminderScheduler.addReminder(task);
+    }
+
+    // Create notification for all users (including creator) that a task was added
+    const allUsers = await User.find();
+    for (const user of allUsers) {
+      // For the creator, send notification with a system sender to avoid self-skip
+      if (user._id.toString() === userId) {
+        // Create notification for task creator
+        const notification = new Notification({
+          type: "task",
+          sender: userId,
+          recipient: user._id,
+          task: task._id,
+          message: `You created a task: "${titleValidation.cleanedTitle}"`
+        });
+        await notification.save();
+      } else {
+        // For other users, use normal notification
+        await createNotification(
+          "task",
+          userId,
+          user._id,
+          {
+            task: task._id,
+            message: `A new task was created: "${titleValidation.cleanedTitle}"`
+          }
+        );
+      }
     }
 
     const updatedPlan = await StudyPlan.findOne({

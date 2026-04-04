@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import resourceService from "../services/resource.service";
 import "./MyResources.css";
 
@@ -7,6 +8,8 @@ export default function MyResources() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+
+  const location = useLocation();
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -22,6 +25,22 @@ export default function MyResources() {
 
     fetchResources();
   }, []);
+
+  // Scroll to resource when navigated from notification
+  useEffect(() => {
+    if (location.state?.resourceId) {
+      setTimeout(() => {
+        const resourceElement = document.getElementById(`resource-${location.state.resourceId}`);
+        if (resourceElement) {
+          resourceElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          resourceElement.classList.add("highlight-resource");
+          setTimeout(() => {
+            resourceElement.classList.remove("highlight-resource");
+          }, 3000);
+        }
+      }, 300);
+    }
+  }, [location.state]);
 
   const getFileUrl = (path) => {
     if (!path) return "#";
@@ -211,7 +230,7 @@ export default function MyResources() {
                 r.fileUrl?.split("\\").pop()?.split("/").pop() || "Unknown file";
 
               return (
-                <div className="resource-card" key={r._id}>
+                <div id={`resource-${r._id}`} className="resource-card" key={r._id}>
                   <div
                     className={`card-strip ${
                       fileType === "video" ? "video-strip" : "doc-strip"

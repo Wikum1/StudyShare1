@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["like", "comment"],
+      enum: ["like", "comment", "reaction", "resource", "task"],
       required: true
     },
     sender: {
@@ -20,11 +20,25 @@ const notificationSchema = new mongoose.Schema(
     post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
-      required: true
+      default: null
+    },
+    resource: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Resource",
+      default: null
+    },
+    task: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      default: null
     },
     relatedComment: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Comment",
+      default: null
+    },
+    reactionType: {
+      type: String,
       default: null
     },
     message: {
