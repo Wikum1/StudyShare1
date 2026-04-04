@@ -5,7 +5,6 @@ exports.createResource = async (req, res) => {
   try {
     const { title, description, subject } = req.body;
 
-    /* 🔴 VALIDATION */
     if (!title || !description || !subject) {
       return res.status(400).json({
         message: "All fields (title, description, subject) are required"
@@ -18,16 +17,14 @@ exports.createResource = async (req, res) => {
       });
     }
 
-    /* 🔥 DEBUG LOG (helps if still failing) */
     console.log("Uploaded File:", req.file);
     console.log("Body:", req.body);
 
-    /* ================= SAVE ================= */
     const resource = await Resource.create({
       title,
       description,
       subject,
-      fileUrl: req.file.path.replace(/\\/g, "/"), // 🔥 fix Windows path issue
+      fileUrl: req.file.path.replace(/\\/g, "/"),
       status: "Pending"
     });
 
@@ -35,27 +32,107 @@ exports.createResource = async (req, res) => {
       message: "Resource uploaded successfully",
       resource
     });
-
   } catch (err) {
     console.error("Upload Error:", err);
-
     res.status(500).json({
       message: err.message || "Server error while uploading resource"
     });
   }
 };
 
-/* ================= GET ALL RESOURCES ================= */
+/* ================= STUDENT VIEW ================= */
+/* only approved resources should be visible to students */
 exports.getMyResources = async (req, res) => {
+  try {
+    const resources = await Resource.find({ status: "Approved" }).sort({ createdAt: -1 });
+
+    res.status(200).json(resources);
+  } catch (err) {
+    console.error("Fetch Error:", err);
+    res.status(500).json({
+      message: "Server error while fetching resources"
+    });
+  }
+};
+
+/* ================= ADMIN: GET PENDING RESOURCES ================= */
+exports.getPendingResources = async (req, res) => {
+  try {
+    const resources = await Resource.find({ status: "Pending" }).sort({ createdAt: -1 });
+
+    res.status(200).json(resources);
+  } catch (err) {
+    console.error("Pending Fetch Error:", err);
+    res.status(500).json({
+      message: "Server error while fetching pending resources"
+    });
+  }
+};
+
+/* ================= ADMIN: GET ALL RESOURCES ================= */
+exports.getAllResources = async (req, res) => {
   try {
     const resources = await Resource.find().sort({ createdAt: -1 });
 
     res.status(200).json(resources);
   } catch (err) {
-    console.error("Fetch Error:", err);
-
+    console.error("All Resource Fetch Error:", err);
     res.status(500).json({
-      message: "Server error while fetching resources"
+      message: "Server error while fetching all resources"
+    });
+  }
+};
+
+/* ================= ADMIN: APPROVE RESOURCE ================= */
+exports.approveResource = async (req, res) => {
+  try {
+    const resource = await Resource.findByIdAndUpdate(
+      req.params.id,
+      { status: "Approved" },
+      { new: true }
+    );
+
+    if (!resource) {
+      return res.status(404).json({
+        message: "Resource not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Resource approved successfully",
+      resource
+    });
+  } catch (err) {
+    console.error("Approve Error:", err);
+    res.status(500).json({
+      message: "Server error while approving resource"
+    });
+  }
+};
+
+/* ================= ADMIN: REJECT RESOURCE ================= */
+exports.rejectResource = async (req, res) => {
+  try {
+    const resource = await Resource.findByIdAndUpdate(
+      req.params.id,
+      { status: "Rejected" },
+      { new: true }
+    );
+
+    if (!resource) {
+      return res.status(404).json({
+        message: "Resource not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Resource rejected successfully",
+      resource
+    });
+  } catch (err) {
+    console.error("Reject Error:", err);
+    res.status(500).json({
+      message: "Server error while rejecting resource"
     });
   }
 };
@@ -74,7 +151,6 @@ exports.getResourceById = async (req, res) => {
     res.status(200).json(resource);
   } catch (err) {
     console.error("Get Error:", err);
-
     res.status(500).json({
       message: "Error fetching resource"
     });
@@ -99,7 +175,6 @@ exports.deleteResource = async (req, res) => {
     });
   } catch (err) {
     console.error("Delete Error:", err);
-
     res.status(500).json({
       message: "Error deleting resource"
     });

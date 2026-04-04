@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 
 /* Public Components */
 import Navbar from "./components/Navbar";
@@ -20,34 +20,44 @@ import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 
-/* Dashboard Pages */
+/* Student Dashboard Pages */
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
-import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
 import WallPage from "./pages/WallPage";
 
-/* PUBLIC LAYOUT */
-function PublicLayout({ children }) {
+/* Admin Pages */
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminStudents from "./pages/admin/AdminStudents";
+import AdminResources from "./pages/admin/AdminResources";
+import AdminActivities from "./pages/admin/AdminActivities";
+
+/* ================= PUBLIC LAYOUT ================= */
+function PublicLayout() {
   return (
     <>
       <ReminderToast />
       <Navbar />
-      <main style={{ minHeight: "80vh" }}>{children}</main>
+      <main style={{ minHeight: "80vh" }}>
+        <Outlet />
+      </main>
       <Footer />
     </>
   );
 }
 
-/* DASHBOARD LAYOUT */
-function DashboardLayout({ children }) {
+/* ================= STUDENT DASHBOARD LAYOUT ================= */
+function DashboardLayout() {
   return (
     <>
       <ReminderToast />
       <DashboardNavbar />
-      <main style={{ minHeight: "80vh", padding: "30px" }}>{children}</main>
+      <main style={{ minHeight: "80vh", padding: "30px" }}>
+        <Outlet />
+      </main>
     </>
   );
 }
@@ -56,122 +66,37 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* PUBLIC WEBSITE */}
+        {/* ================= PUBLIC WEBSITE ================= */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/planner" element={<StudyPlannerPage />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Route>
 
-        <Route
-          path="/"
-          element={
-            <PublicLayout>
-              <Home />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/resources"
-          element={
-            <PublicLayout>
-              <ResourcesPage />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/planner"
-          element={
-            <PublicLayout>
-              <StudyPlannerPage />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/forum"
-          element={
-            <PublicLayout>
-              <ForumPage />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <PublicLayout>
-              <AdminPage />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/contact"
-          element={
-            <PublicLayout>
-              <ContactPage />
-            </PublicLayout>
-          }
-        />
-
-        {/* AUTH PAGES */}
-
+        {/* ================= AUTH PAGES ================= */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* DASHBOARD AREA */}
+        {/* ================= STUDENT DASHBOARD ================= */}
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardHome />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="upload" element={<UploadResource />} />
+          <Route path="my-resources" element={<MyResources />} />
+          <Route path="study-planner" element={<StudyCalendar />} />
+          <Route path="wall" element={<WallPage />} />
+        </Route>
 
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardLayout>
-              <DashboardHome />
-            </DashboardLayout>
-          }
-        />
-
-        <Route
-          path="/dashboard/profile"
-          element={
-            <DashboardLayout>
-              <ProfilePage />
-            </DashboardLayout>
-          }
-        />
-
-        <Route
-          path="/dashboard/upload"
-          element={
-            <DashboardLayout>
-              <UploadResource />
-            </DashboardLayout>
-          }
-        />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
-        <Route
-          path="/dashboard/my-resources"
-          element={
-            <DashboardLayout>
-              <MyResources />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/dashboard/study-planner"
-          element={
-            <DashboardLayout>
-              <StudyCalendar />
-            </DashboardLayout>
-          }
-        />
-
-        <Route
-          path="/dashboard/wall"
-          element={
-            <DashboardLayout>
-              <WallPage />
-            </DashboardLayout>
-          }
-        />
+        {/* ================= ADMIN DASHBOARD ================= */}
+        <Route path="/admin-dashboard" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="students" element={<AdminStudents />} />
+          <Route path="resources" element={<AdminResources />} />
+          <Route path="activities" element={<AdminActivities />} />
+        </Route>
       </Routes>
     </Router>
   );

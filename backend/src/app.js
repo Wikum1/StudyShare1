@@ -6,6 +6,7 @@ const path = require("path");
 
 const resourceRoutes = require("./routes/resource.routes");
 const adminResourceRoutes = require("./routes/admin/adminResource.routes");
+const adminRoutes = require("./routes/admin/admin.routes");
 const contactRoutes = require("./routes/contactRoutes");
 const authRoutes = require("./routes/auth.routes");
 const studyPlanRoutes = require("./routes/studyPlan.routes");
@@ -48,6 +49,8 @@ mongoose
 // Routes
 app.use("/api/resources", resourceRoutes);
 app.use("/api/admin/resources", adminResourceRoutes);
+app.use("/api/admin", adminRoutes);
+
 app.use("/api/contact", contactRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/study-plans", studyPlanRoutes); // ✅ includes nested task routes

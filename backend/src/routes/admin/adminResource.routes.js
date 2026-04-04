@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../../controllers/admin/adminResource.controller");
 
-router.get("/", controller.getAllResources);
-router.put("/:id/approve", controller.approveResource);
-router.put("/:id/reject", controller.rejectResource);
+const adminResourceController = require("../../controllers/admin/adminResource.controller");
+const { protect, adminOnly } = require("../../middleware/auth.middleware");
+
+router.get("/pending", protect, adminOnly, adminResourceController.getPendingResources);
+router.get("/all", protect, adminOnly, adminResourceController.getAllResources);
+router.put("/approve/:id", protect, adminOnly, adminResourceController.approveResource);
+router.put("/reject/:id", protect, adminOnly, adminResourceController.rejectResource);
 
 module.exports = router;
