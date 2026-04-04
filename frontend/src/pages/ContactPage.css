@@ -1,0 +1,97 @@
+/* HERO SECTION */
+
+.contact-hero {
+  height: 80vh;
+
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+              url("../assets/contact-bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.contact-hero-content {
+  color: white;
+  max-width: 700px;
+}
+
+.contact-hero-content h1 {
+  font-size: 42px;
+  margin-bottom: 15px;
+}
+
+.contact-hero-content p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+/* CONTACT INFO CARDS */
+
+.contact-features {
+  padding: 80px 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.contact-card {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+
+  text-align: center;
+
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+
+  transition: 0.3s;
+}
+
+.contact-card:hover {
+  transform: translateY(-8px);
+}
+
+/* FORM SECTION */
+
+.contact-form-section {
+  padding: 80px 40px;
+  text-align: center;
+  background: #f4f6f9;
+}
+
+.contact-form-section h2 {
+  margin-bottom: 30px;
+}
+
+.contact-form-section form {
+  max-width: 600px;
+  margin: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contact-form-section input,
+.contact-form-section textarea {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.contact-form-section button {
+  padding: 14px;
+  border-radius: 25px;
+  border: none;
+
+  background: #4CAF50;
+  color: white;
+
+  cursor: pointer;
+}
