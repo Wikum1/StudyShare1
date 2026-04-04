@@ -150,7 +150,7 @@ export default function DashboardNavbar() {
         <div className="dashboard-logo">
           <Link to="/">
             <img src={logo} alt="StudyShare Logo" />
-            <span>StudyShare</span>
+      
           </Link>
         </div>
 

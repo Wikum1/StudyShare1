@@ -44,15 +44,15 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
+      console.log("Login response:", data);
 
       if (!res.ok) {
         setError(data.message || "Login failed");
         return;
       }
 
-      // Merge token into user object
-      const userWithToken = { ...data.user, token: data.token };
-      localStorage.setItem("user", JSON.stringify(userWithToken));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       if (data.user.role === "admin") {
         navigate("/admin-dashboard");

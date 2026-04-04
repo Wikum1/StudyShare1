@@ -35,6 +35,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminStudents from "./pages/admin/AdminStudents";
 import AdminResources from "./pages/admin/AdminResources";
 import AdminActivities from "./pages/admin/AdminActivities";
+import AdminPosts from "./pages/admin/AdminPosts";
 
 /* ================= PUBLIC LAYOUT ================= */
 function PublicLayout() {
@@ -98,6 +99,7 @@ function App() {
           <Route path="students" element={<AdminStudents />} />
           <Route path="resources" element={<AdminResources />} />
           <Route path="activities" element={<AdminActivities />} />
+          <Route path="posts" element={<AdminPosts />} />
         </Route>
       </Routes>
     </Router>
