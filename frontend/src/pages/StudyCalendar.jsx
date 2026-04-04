@@ -715,6 +715,21 @@ export default function StudyCalendar() {
         </button>
       </div>
 
+      {/* VIEW TASK LIST BUTTON */}
+      <div className="task-list-button-container">
+        <button
+          className="view-task-list-btn"
+          onClick={() => {
+            setModalSelectedDate(currentDate);
+            const dateStr = formatDateToYMD(currentDate);
+            setModalTasks(getAllTasksForDate(dateStr));
+            setShowModalTaskDetails(true);
+          }}
+        >
+          📋 View Task List
+        </button>
+      </div>
+
       {/* CREATE PLAN MODAL */}
       {showCreatePlanModal && (
         <div className="plan-modal-overlay" onClick={() => setShowCreatePlanModal(false)}>

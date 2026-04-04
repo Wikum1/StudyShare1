@@ -25,11 +25,8 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
-<<<<<<< HEAD
-=======
-import AdminDashboard from "./pages/AdminDashboard";
 import StudyCalendar from "./pages/StudyCalendar";
->>>>>>> a67744694ef241bae4f3463ad6e6db952ee6a04e
+import WallPage from "./pages/WallPage";
 
 /* Admin Pages */
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -89,9 +86,10 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="upload" element={<UploadResource />} />
           <Route path="my-resources" element={<MyResources />} />
+          <Route path="study-planner" element={<StudyCalendar />} />
+          <Route path="wall" element={<WallPage />} />
         </Route>
 
-<<<<<<< HEAD
         {/* ================= ADMIN DASHBOARD ================= */}
         <Route path="/admin-dashboard" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -99,52 +97,6 @@ function App() {
           <Route path="resources" element={<AdminResources />} />
           <Route path="activities" element={<AdminActivities />} />
         </Route>
-=======
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardLayout>
-              <DashboardHome />
-            </DashboardLayout>
-          }
-        />
-
-        <Route
-          path="/dashboard/profile"
-          element={
-            <DashboardLayout>
-              <ProfilePage />
-            </DashboardLayout>
-          }
-        />
-
-        <Route
-          path="/dashboard/upload"
-          element={
-            <DashboardLayout>
-              <UploadResource />
-            </DashboardLayout>
-          }
-        />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
-        <Route
-          path="/dashboard/my-resources"
-          element={
-            <DashboardLayout>
-              <MyResources />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/dashboard/study-planner"
-          element={
-            <DashboardLayout>
-              <StudyCalendar />
-            </DashboardLayout>
-          }
-        />
->>>>>>> a67744694ef241bae4f3463ad6e6db952ee6a04e
       </Routes>
     </Router>
   );

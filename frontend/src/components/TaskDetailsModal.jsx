@@ -11,6 +11,11 @@ function TaskDetailsModal({
   onDeleteTask,
   onToggleTask,
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPriorities, setSelectedPriorities] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedPlans, setSelectedPlans] = useState([]);
+
   if (!isOpen) return null;
 
   const formatDateDisplay = (dateStr) => {
@@ -49,9 +54,37 @@ function TaskDetailsModal({
     }
   };
 
+  // Filter tasks based on search and selected filters
+  const filteredTasks = tasks.filter((task) => {
+    // Search query filter
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (task.planTitle && task.planTitle.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    // Priority filter
+    const matchesPriority =
+      selectedPriorities.length === 0 || selectedPriorities.includes(task.priority || "medium");
+
+    // Status filter
+    const taskStatus = task.status === "completed" ? "completed" : "pending";
+    const matchesStatus =
+      selectedStatuses.length === 0 || selectedStatuses.includes(taskStatus);
+
+    // Plan filter
+    const matchesPlan =
+      selectedPlans.length === 0 || selectedPlans.includes(task.planTitle || "Other");
+
+    return matchesSearch && matchesPriority && matchesStatus && matchesPlan;
+  });
+
+  // Get unique plans and priorities for filter options
+  const uniquePlans = [...new Set(tasks.map((t) => t.planTitle || "Other"))];
+  const uniquePriorities = ["high", "medium", "low"];
+  const uniqueStatuses = ["pending", "completed"];
+
   // Group tasks by category (planTitle)
   const groupedTasks = {};
-  tasks.forEach((task) => {
+  filteredTasks.forEach((task) => {
     const category = task.planTitle || "Other";
     if (!groupedTasks[category]) {
       groupedTasks[category] = [];
@@ -93,6 +126,100 @@ function TaskDetailsModal({
               ✕
             </button>
           </div>
+        </div>
+
+        <div className="filter-panel">
+          <div className="filter-group">
+            <input
+              type="text"
+              placeholder="Search tasks by name or plan..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Priority:</label>
+            <div className="filter-options">
+              {uniquePriorities.map((priority) => (
+                <label key={priority} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedPriorities.includes(priority)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPriorities([...selectedPriorities, priority]);
+                      } else {
+                        setSelectedPriorities(selectedPriorities.filter((p) => p !== priority));
+                      }
+                    }}
+                  />
+                  <span className="priority-badge" style={{ backgroundColor: { high: "#dc2626", medium: "#f59e0b", low: "#10b981" }[priority] }}>
+                    {priority.toUpperCase()}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Status:</label>
+            <div className="filter-options">
+              {uniqueStatuses.map((status) => (
+                <label key={status} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedStatuses.includes(status)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedStatuses([...selectedStatuses, status]);
+                      } else {
+                        setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+                      }
+                    }}
+                  />
+                  {status.toUpperCase()}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Plan:</label>
+            <div className="filter-options">
+              {uniquePlans.map((plan) => (
+                <label key={plan} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedPlans.includes(plan)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPlans([...selectedPlans, plan]);
+                      } else {
+                        setSelectedPlans(selectedPlans.filter((p) => p !== plan));
+                      }
+                    }}
+                  />
+                  {plan}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {(searchQuery || selectedPriorities.length > 0 || selectedStatuses.length > 0 || selectedPlans.length > 0) && (
+            <button
+              className="clear-filters-btn"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedPriorities([]);
+                setSelectedStatuses([]);
+                setSelectedPlans([]);
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
         <div className="modal-body task-list-body">
