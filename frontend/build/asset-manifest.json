@@ -1,0 +1,34 @@
+{
+  "files": {
+    "main.css": "/static/css/main.c0aa7b51.css",
+    "main.js": "/static/js/main.3f96bae0.js",
+    "static/js/453.825386d9.chunk.js": "/static/js/453.825386d9.chunk.js",
+    "static/media/hero-video.mp4": "/static/media/hero-video.1a50c55c9b7606abd51b.mp4",
+    "static/media/study-sharing.jpg": "/static/media/study-sharing.87159a46b39be54ead39.jpg",
+    "static/media/forum-discussion.jpg": "/static/media/forum-discussion.762b91909d82afaa8306.jpg",
+    "static/media/resource.jpg": "/static/media/resource.02f7d0c708008ed4eb6b.jpg",
+    "static/media/resource-hero.jpg": "/static/media/resource-hero.382a80279bc9d5cb9c72.jpg",
+    "static/media/blog3.jpg": "/static/media/blog3.64b05d5e1015f85f56e6.jpg",
+    "static/media/admin & notification.jpg": "/static/media/admin & notification.0bcf836071f611d04784.jpg",
+    "static/media/contact-bg.jpg": "/static/media/contact-bg.60ef4c66d11f23e7a0dc.jpg",
+    "static/media/admin-hero.jpg": "/static/media/admin-hero.79502b58686af373875f.jpg",
+    "static/media/admin.jpg": "/static/media/admin.58503afe321c382af7c6.jpg",
+    "static/media/forum.jpg": "/static/media/forum.5432695d78a7cec40261.jpg",
+    "static/media/blog1.jpg": "/static/media/blog1.081d89712df97416d39d.jpg",
+    "static/media/planner.jpg": "/static/media/planner.18afcffe06afcde66e0d.jpg",
+    "static/media/featured.jpg": "/static/media/featured.11a9d87c7b25d978f8eb.jpg",
+    "static/media/study-planner.jpg": "/static/media/study-planner.4dfaef4e5d855b4c9443.jpg",
+    "static/media/forum-hero.jpg": "/static/media/forum-hero.418c88b01f0e3e88d368.jpg",
+    "static/media/blog2.jpg": "/static/media/blog2.ef6a801cec2a3a3c21a6.jpg",
+    "static/media/logo0.png": "/static/media/logo0.db74bef4cd8d566bcb9b.png",
+    "static/media/logo.png": "/static/media/logo.b01f23d19d0d566c04a6.png",
+    "index.html": "/index.html",
+    "main.c0aa7b51.css.map": "/static/css/main.c0aa7b51.css.map",
+    "main.3f96bae0.js.map": "/static/js/main.3f96bae0.js.map",
+    "453.825386d9.chunk.js.map": "/static/js/453.825386d9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c0aa7b51.css",
+    "static/js/main.3f96bae0.js"
+  ]
+}
