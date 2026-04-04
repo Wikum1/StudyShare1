@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   getPlans,
   createPlan,
@@ -66,6 +67,8 @@ export default function StudyPlanner() {
   const [modalSelectedDate, setModalSelectedDate] = useState(new Date());
   const [modalTasks, setModalTasks] = useState([]);
 
+  const location = useLocation();
+
   const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
@@ -103,6 +106,22 @@ export default function StudyPlanner() {
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
+
+  // Scroll to task when navigated from notification
+  useEffect(() => {
+    if (location.state?.taskId) {
+      setTimeout(() => {
+        const taskElement = document.getElementById(`task-${location.state.taskId}`);
+        if (taskElement) {
+          taskElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          taskElement.classList.add("highlight-task");
+          setTimeout(() => {
+            taskElement.classList.remove("highlight-task");
+          }, 3000);
+        }
+      }, 300);
+    }
+  }, [location.state]);
 
   const timeSlots = [
     "00:00",
@@ -842,6 +861,7 @@ export default function StudyPlanner() {
                     <div key={day} className={`cell ${task ? "has-task" : ""}`}>
                       {task && (
                         <div
+                          id={`task-${task._id}`}
                           className={`task-box ${task.status === "completed" ? "done" : ""}`}
                         >
                           <div className="task-title-wrap">

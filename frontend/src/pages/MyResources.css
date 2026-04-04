@@ -2,6 +2,21 @@
   box-sizing: border-box;
 }
 
+@keyframes highlight-pulse {
+  0% {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+  }
+  100% {
+    background-color: transparent;
+    border-left: 4px solid transparent;
+  }
+}
+
+.highlight-resource {
+  animation: highlight-pulse 3s ease-out;
+}
+
 .my-resources-page {
   min-height: 100vh;
   background: #f8fafc;

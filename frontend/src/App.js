@@ -23,6 +23,7 @@ import RegisterPage from "./pages/auth/RegisterPage";
 /* Student Dashboard Pages */
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
+import ProfileDetailsPage from "./pages/ProfileDetailsPage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import StudyCalendar from "./pages/StudyCalendar";
@@ -85,6 +86,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile-details" element={<ProfileDetailsPage />} />
           <Route path="upload" element={<UploadResource />} />
           <Route path="my-resources" element={<MyResources />} />
           <Route path="study-planner" element={<StudyCalendar />} />

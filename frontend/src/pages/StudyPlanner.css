@@ -53,6 +53,21 @@
   }
 }
 
+@keyframes highlight-pulse {
+  0% {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+  }
+  100% {
+    background-color: transparent;
+    border-left: 4px solid transparent;
+  }
+}
+
+.highlight-task {
+  animation: highlight-pulse 3s ease-out;
+}
+
 .error-banner button {
   background: none;
   border: none;

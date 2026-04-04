@@ -130,6 +130,13 @@ exports.getAllPosts = async (req, res) => {
     const totalPosts = await Post.countDocuments(filter);
     const posts = await Post.find(filter)
       .populate("author", "name avatar email bio")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "name avatar email"
+        }
+      })
       .sort(sortOptions)
       .limit(limit)
       .skip((page - 1) * limit);
@@ -139,14 +146,18 @@ exports.getAllPosts = async (req, res) => {
       posts,
       pagination: {
         totalPosts,
-        totalPages: Math.ceil(totalPosts / limit),
+        totalPages: Math.ceil(totalPosts / limit) || 1,
         currentPage: page,
         limit,
       },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to retrieve posts" });
+    res.status(500).json({
+      message: "Failed to retrieve posts",
+      posts: [],
+      pagination: { totalPages: 1, totalPosts: 0, currentPage: 1, limit: 10 }
+    });
   }
 };
 
@@ -421,6 +432,16 @@ exports.getUserSavedPosts = async (req, res) => {
       .populate({
         path: "post",
         populate: { path: "author", select: "name avatar email" },
+        populate: [
+          { path: "author", select: "name avatar email" },
+          {
+            path: "comments",
+            populate: {
+              path: "author",
+              select: "name avatar email"
+            }
+          }
+        ]
       })
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -436,10 +457,17 @@ exports.getUserSavedPosts = async (req, res) => {
         pages: Math.ceil(totalSaved / limit),
         currentPage: page,
       },
+      posts: savedPosts.map(s => s.post).filter(p => p !== null),
+      pagination: {
+        totalPosts: totalSaved,
+        totalPages: Math.ceil(totalSaved / limit) || 1,
+        currentPage: page,
+        limit
+      }
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to retrieve saved posts" });
+    console.error("Error fetching saved posts:", err);
+    res.status(500).json({ message: "Failed to retrieve saved posts", posts: [], pagination: { totalPages: 1 } });
   }
 };
 

@@ -5,6 +5,7 @@ const fs = require("fs");
 /* ================= ENSURE UPLOAD FOLDER EXISTS ================= */
 const uploadDir = "uploads";
 const postsDir = path.join(uploadDir, "posts");
+const profileDir = path.join(uploadDir, "profiles");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -14,7 +15,11 @@ if (!fs.existsSync(postsDir)) {
   fs.mkdirSync(postsDir);
 }
 
-/* ================= STORAGE ================= */
+if (!fs.existsSync(profileDir)) {
+  fs.mkdirSync(profileDir);
+}
+
+/* ================= STORAGE FOR POSTS ================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, postsDir);
@@ -25,6 +30,19 @@ const storage = multer.diskStorage({
       path.extname(file.originalname);
 
     cb(null, uniqueName);
+  }
+});
+
+/* ================= STORAGE FOR PROFILE PICTURES ================= */
+const profileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, profileDir);
+  },
+  filename: (req, file, cb) => {
+    const userId = req.user?.id || "unknown";
+    const ext = path.extname(file.originalname);
+    const filename = `${userId}-${Date.now()}${ext}`;
+    cb(null, filename);
   }
 });
 
@@ -117,8 +135,48 @@ const postMediaMiddleware = (req, res, next) => {
   });
 };
 
+/* ================= FILE FILTER FOR PROFILE PICTURES ================= */
+const profilePictureFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only JPEG, PNG, and WebP images are allowed for profile pictures"), false);
+  }
+};
+
+/* ================= MULTER FOR PROFILE PICTURES ================= */
+const profileUpload = multer({
+  storage: profileStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB max for profile pictures
+  },
+  fileFilter: profilePictureFilter
+});
+
+/* ================= ERROR HANDLER - PROFILE PICTURE UPLOAD ================= */
+const profilePictureMiddleware = (req, res, next) => {
+  const singleUpload = profileUpload.single("profilePicture");
+
+  singleUpload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({
+        message: "Profile picture upload error: " + err.message
+      });
+    } else if (err) {
+      return res.status(400).json({
+        message: err.message
+      });
+    }
+
+    next();
+  });
+};
+
 module.exports = {
   uploadMiddleware,
   postMediaMiddleware,
-  postUpload
+  postUpload,
+  profilePictureMiddleware
 };
