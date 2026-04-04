@@ -32,25 +32,29 @@ function getTodayLocalDateString() {
 // Convert 24-hour time (HH:MM) to 12-hour format
 function convertTo12Hour(time24) {
   if (!time24) return { hour: "9", minute: "00", period: "AM" };
+
   const [hours, minutes] = time24.split(":");
-  const hour = parseInt(hours);
+  const hour = parseInt(hours, 10);
   const period = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+
   return {
     hour: String(hour12),
     minute: minutes || "00",
-    period: period
+    period,
   };
 }
 
 // Convert 12-hour format to 24-hour time (HH:MM)
 function convertTo24Hour(hour12, minute, period) {
-  let hour = parseInt(hour12) || 0;
+  let hour = parseInt(hour12, 10) || 0;
+
   if (period === "PM" && hour !== 12) {
     hour += 12;
   } else if (period === "AM" && hour === 12) {
     hour = 0;
   }
+
   return `${String(hour).padStart(2, "0")}:${minute || "00"}`;
 }
 
@@ -59,10 +63,10 @@ export default function StudyCalendar() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState("week"); // "day", "week", "month"
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Modal state for task details
   const [showModalTaskDetails, setShowModalTaskDetails] = useState(false);
   const [modalSelectedDate, setModalSelectedDate] = useState(new Date());
@@ -89,48 +93,60 @@ export default function StudyCalendar() {
     reminderTime: "",
     reminderTimeHour: "9",
     reminderTimeMinute: "00",
-    reminderTimePeriod: "AM"
+    reminderTimePeriod: "AM",
   });
   const [showReminderCalendar, setShowReminderCalendar] = useState(false);
   const [addingTask, setAddingTask] = useState(false);
 
-  // Check if user is authenticated on mount
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      setIsAuthenticated(false);
-      setError("Please log in to access study plans");
-    } else {
-      setIsAuthenticated(true);
-      fetchPlans();
-    }
-  }, []);
-
   const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem("user"));
-      
-      if (!user || !user.token) {
+      setError("");
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
         setIsAuthenticated(false);
-        setError("Your session has expired. Please log in again.");
+        setError("Please log in to access study plans");
+        setPlans([]);
+        setSelectedPlan(null);
         return;
       }
 
       const data = await getPlans();
-      setPlans(data);
+      const plansArray = Array.isArray(data) ? data : [];
+
+      setPlans(plansArray);
+
       reminderService.initialize();
-      if (data.length > 0) {
-        setSelectedPlan(data[0]);
+
+      if (plansArray.length > 0) {
+        setSelectedPlan((prevSelectedPlan) => {
+          if (!prevSelectedPlan) return plansArray[0];
+
+          const updatedSelectedPlan = plansArray.find(
+            (plan) => plan._id === prevSelectedPlan._id
+          );
+
+          return updatedSelectedPlan || plansArray[0];
+        });
+
         reminderService.scheduleBulkReminders(
-          data.flatMap((plan) => plan.tasks || [])
+          plansArray.flatMap((plan) => plan.tasks || [])
         );
+      } else {
+        setSelectedPlan(null);
       }
     } catch (err) {
       if (err?.response?.status === 401) {
         setIsAuthenticated(false);
-        setError("Your session has expired. Please log in again to access your study plans.");
+        setError(
+          "Your session has expired. Please log in again to access your study plans."
+        );
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        setPlans([]);
+        setSelectedPlan(null);
       } else {
         setError(err?.response?.data?.message || "Failed to fetch plans");
       }
@@ -139,6 +155,21 @@ export default function StudyCalendar() {
       setLoading(false);
     }
   }, []);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      setIsAuthenticated(false);
+      setError("Please log in to access study plans");
+      return;
+    }
+
+    setIsAuthenticated(true);
+    fetchPlans();
+  }, [fetchPlans]);
 
   const handleCreatePlan = async () => {
     const cleanedPlanName = newPlanName.trim();
@@ -151,10 +182,10 @@ export default function StudyCalendar() {
     try {
       setCreatingPlan(true);
       setError("");
-      
+
       const newPlan = await createPlan({ title: cleanedPlanName });
-      
-      setPlans([...plans, newPlan]);
+
+      setPlans((prevPlans) => [...prevPlans, newPlan]);
       setSelectedPlan(newPlan);
       setNewPlanName("");
       setShowCreatePlanModal(false);
@@ -173,6 +204,7 @@ export default function StudyCalendar() {
     }
 
     const cleanedTitle = taskFormData.title.trim();
+
     if (!cleanedTitle) {
       setError("Please enter a task title");
       return;
@@ -183,7 +215,10 @@ export default function StudyCalendar() {
       return;
     }
 
-    if (taskFormData.hasReminder && (!taskFormData.reminderDate || !taskFormData.reminderTimeHour)) {
+    if (
+      taskFormData.hasReminder &&
+      (!taskFormData.reminderDate || !taskFormData.reminderTimeHour)
+    ) {
       setError("Please set both reminder date and time");
       return;
     }
@@ -192,10 +227,18 @@ export default function StudyCalendar() {
       setAddingTask(true);
       setError("");
 
-      // Convert 12-hour format to 24-hour
-      const time24 = convertTo24Hour(taskFormData.taskTimeHour, taskFormData.taskTimeMinute, taskFormData.taskTimePeriod);
-      const reminderTime24 = taskFormData.hasReminder 
-        ? convertTo24Hour(taskFormData.reminderTimeHour, taskFormData.reminderTimeMinute, taskFormData.reminderTimePeriod)
+      const time24 = convertTo24Hour(
+        taskFormData.taskTimeHour,
+        taskFormData.taskTimeMinute,
+        taskFormData.taskTimePeriod
+      );
+
+      const reminderTime24 = taskFormData.hasReminder
+        ? convertTo24Hour(
+            taskFormData.reminderTimeHour,
+            taskFormData.reminderTimeMinute,
+            taskFormData.reminderTimePeriod
+          )
         : null;
 
       const newTask = {
@@ -205,19 +248,19 @@ export default function StudyCalendar() {
         priority: taskFormData.priority,
         isImportant: taskFormData.isImportant,
         hasReminder: taskFormData.hasReminder,
-        reminderDateTime: taskFormData.hasReminder 
-          ? `${taskFormData.reminderDate}T${reminderTime24}` 
+        reminderDateTime: taskFormData.hasReminder
+          ? `${taskFormData.reminderDate}T${reminderTime24}`
           : null,
-        status: "pending"
+        status: "pending",
       };
 
       const updatedPlan = await addTask(selectedPlan._id, newTask);
-      
-      // Update the selectedPlan in state
+
       setSelectedPlan(updatedPlan);
-      setPlans(plans.map(p => p._id === updatedPlan._id ? updatedPlan : p));
-      
-      // Reset form and close modal
+      setPlans((prevPlans) =>
+        prevPlans.map((p) => (p._id === updatedPlan._id ? updatedPlan : p))
+      );
+
       setTaskFormData({
         title: "",
         time: "09:00",
@@ -231,9 +274,10 @@ export default function StudyCalendar() {
         reminderTime: "",
         reminderTimeHour: "9",
         reminderTimeMinute: "00",
-        reminderTimePeriod: "AM"
+        reminderTimePeriod: "AM",
       });
       setShowAddTaskModal(false);
+      setShowReminderCalendar(false);
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to add task");
       console.error(err);
@@ -242,19 +286,15 @@ export default function StudyCalendar() {
     }
   };
 
-  const getTodayLocalDateString = () => {
-    const now = new Date();
-    return formatDateToYMD(now);
-  };
-
   const getAllTasksForDate = (dateStr) => {
     if (!selectedPlan) return [];
-    const tasksForDate = selectedPlan.tasks?.filter(
-      (task) => task.date === dateStr
-    ) || [];
+
+    const tasksForDate =
+      selectedPlan.tasks?.filter((task) => task.date === dateStr) || [];
+
     return tasksForDate.sort((a, b) => {
-      const timeA = parseInt(a.time.replace(":", ""));
-      const timeB = parseInt(b.time.replace(":", ""));
+      const timeA = parseInt((a.time || "00:00").replace(":", ""), 10);
+      const timeB = parseInt((b.time || "00:00").replace(":", ""), 10);
       return timeA - timeB;
     });
   };
@@ -265,19 +305,20 @@ export default function StudyCalendar() {
     const diff = d.getDate() - day;
     const startDate = new Date(d.setDate(diff));
     const weekDates = [];
+
     for (let i = 0; i < 7; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      weekDates.push(formatDateToYMD(date));
+      const weekDate = new Date(startDate);
+      weekDate.setDate(startDate.getDate() + i);
+      weekDates.push(formatDateToYMD(weekDate));
     }
+
     return weekDates;
   };
 
   const handleOpenDayTasks = (date) => {
     const dateStr = formatDateToYMD(date);
     setModalSelectedDate(date);
-    const tasksForDate = getAllTasksForDate(dateStr);
-    setModalTasks(tasksForDate);
+    setModalTasks(getAllTasksForDate(dateStr));
     setShowModalTaskDetails(true);
   };
 
@@ -299,12 +340,13 @@ export default function StudyCalendar() {
           const reminderDateTime = new Date(
             taskDateTime.getTime() - 6 * 60 * 60 * 1000
           );
-          
+
           updateData.hasReminder = true;
           updateData.reminderDateTime = reminderDateTime.toISOString();
         }
       } else if (property === "complete") {
-        updateData.status = task.status === "completed" ? "pending" : "completed";
+        updateData.status =
+          task.status === "completed" ? "pending" : "completed";
       }
 
       const planContainingTask = plans.find((p) =>
@@ -312,29 +354,32 @@ export default function StudyCalendar() {
       );
 
       if (planContainingTask) {
-        // Optimistically update UI immediately
         const updatedTask = { ...task, ...updateData };
-        
-        // Update modal tasks immediately for instant feedback
+
         if (showModalTaskDetails) {
-          setModalTasks(
-            modalTasks.map((t) => (t._id === task._id ? updatedTask : t))
+          setModalTasks((prevTasks) =>
+            prevTasks.map((t) => (t._id === task._id ? updatedTask : t))
           );
         }
-        
-        // Optimistically update plans state
+
         const updatedPlan = {
           ...planContainingTask,
           tasks: planContainingTask.tasks.map((t) =>
             t._id === task._id ? updatedTask : t
           ),
         };
-        setPlans(plans.map((p) => (p._id === planContainingTask._id ? updatedPlan : p)));
 
-        // Send update to backend
+        setPlans((prevPlans) =>
+          prevPlans.map((p) =>
+            p._id === planContainingTask._id ? updatedPlan : p
+          )
+        );
+
+        if (selectedPlan?._id === updatedPlan._id) {
+          setSelectedPlan(updatedPlan);
+        }
+
         await updateTask(planContainingTask._id, task._id, updateData);
-        
-        // Refresh in background to sync with server
         await fetchPlans();
       }
     } catch (err) {
@@ -342,7 +387,6 @@ export default function StudyCalendar() {
         err?.response?.data?.message || `Failed to update task: ${err.message}`
       );
       console.error(err);
-      // Optionally refetch to restore correct state if update failed
       await fetchPlans();
     }
   };
@@ -354,6 +398,7 @@ export default function StudyCalendar() {
   const handleDeleteTask = async (taskId) => {
     try {
       setError("");
+
       const planContainingTask = plans.find((p) =>
         (p.tasks || []).some((t) => t._id === taskId)
       );
@@ -361,12 +406,10 @@ export default function StudyCalendar() {
       if (planContainingTask) {
         await deleteTask(planContainingTask._id, taskId);
         await fetchPlans();
-        
-        // Update modal tasks
+
         if (showModalTaskDetails) {
           const dateStr = formatDateToYMD(modalSelectedDate);
-          const updatedTasks = getAllTasksForDate(dateStr);
-          setModalTasks(updatedTasks);
+          setModalTasks(getAllTasksForDate(dateStr));
         }
       }
     } catch (err) {
@@ -375,9 +418,27 @@ export default function StudyCalendar() {
     }
   };
 
+  const handleDeletePlan = async (planId) => {
+    try {
+      setError("");
+      await deletePlan(planId);
+
+      const updatedPlans = plans.filter((plan) => plan._id !== planId);
+      setPlans(updatedPlans);
+
+      if (selectedPlan?._id === planId) {
+        setSelectedPlan(updatedPlans.length > 0 ? updatedPlans[0] : null);
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to delete plan");
+      console.error(err);
+    }
+  };
+
   // Date navigation
   const navigatePrevious = () => {
     const newDate = new Date(currentDate);
+
     if (viewMode === "day") {
       newDate.setDate(newDate.getDate() - 1);
     } else if (viewMode === "week") {
@@ -385,6 +446,7 @@ export default function StudyCalendar() {
     } else if (viewMode === "month") {
       newDate.setMonth(newDate.getMonth() - 1);
     }
+
     setCurrentDate(newDate);
   };
 
@@ -394,6 +456,7 @@ export default function StudyCalendar() {
 
   const navigateNext = () => {
     const newDate = new Date(currentDate);
+
     if (viewMode === "day") {
       newDate.setDate(newDate.getDate() + 1);
     } else if (viewMode === "week") {
@@ -401,23 +464,39 @@ export default function StudyCalendar() {
     } else if (viewMode === "month") {
       newDate.setMonth(newDate.getMonth() + 1);
     }
+
     setCurrentDate(newDate);
   };
 
   // Format date display
   const getDateDisplay = () => {
     if (viewMode === "day") {
-      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
-      return currentDate.toLocaleDateString("en-US", options);
-    } else if (viewMode === "week") {
-      const weekDates = getWeekDates(currentDate);
-      const start = new Date(weekDates[0] + "T00:00:00");
-      const end = new Date(weekDates[6] + "T00:00:00");
-      return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-    } else {
-      const options = { month: "long", year: "numeric" };
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      };
       return currentDate.toLocaleDateString("en-US", options);
     }
+
+    if (viewMode === "week") {
+      const weekDates = getWeekDates(currentDate);
+      const start = new Date(`${weekDates[0]}T00:00:00`);
+      const end = new Date(`${weekDates[6]}T00:00:00`);
+
+      return `${start.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })} - ${end.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`;
+    }
+
+    const options = { month: "long", year: "numeric" };
+    return currentDate.toLocaleDateString("en-US", options);
   };
 
   // Day View Component
@@ -430,23 +509,42 @@ export default function StudyCalendar() {
       <div className="day-view-container">
         <div className="day-view-header">
           <div className="day-header-content">
-            <h2>📅 {currentDate.toLocaleDateString("en-US", { weekday: "long" })}</h2>
+            <h2>
+              📅{" "}
+              {currentDate.toLocaleDateString("en-US", { weekday: "long" })}
+            </h2>
             <p className="day-view-date">{dateStr}</p>
           </div>
+
           <div className="day-header-buttons">
             <button
               className="add-task-btn"
               onClick={() => setShowAddTaskModal(true)}
               disabled={!selectedPlan}
-              title={selectedPlan ? "Add task to this day" : "Please select a study plan first"}
+              title={
+                selectedPlan
+                  ? "Add task to this day"
+                  : "Please select a study plan first"
+              }
             >
               + Add Task
             </button>
+
             <button
               className="download-btn"
-              onClick={() => generateDayPlannerPDF(dateStr, getAllTasksForDate(dateStr), selectedPlan?.title)}
+              onClick={() =>
+                generateDayPlannerPDF(
+                  dateStr,
+                  getAllTasksForDate(dateStr),
+                  selectedPlan?.title
+                )
+              }
               disabled={!selectedPlan}
-              title={selectedPlan ? "Download day planner as PDF" : "Please select a study plan first"}
+              title={
+                selectedPlan
+                  ? "Download day planner as PDF"
+                  : "Please select a study plan first"
+              }
             >
               📥 Download PDF
             </button>
@@ -457,17 +555,20 @@ export default function StudyCalendar() {
           {hours.map((hour) => {
             const timeStr = `${String(hour).padStart(2, "0")}:00`;
             const tasksAtHour = tasksForDay.filter((task) =>
-              task.time.startsWith(String(hour).padStart(2, "0"))
+              (task.time || "").startsWith(String(hour).padStart(2, "0"))
             );
 
             return (
               <div key={hour} className="timeline-hour">
                 <div className="hour-label">{timeStr}</div>
+
                 <div className="hour-tasks">
                   {tasksAtHour.map((task) => (
                     <div
                       key={task._id}
-                      className={`timeline-task ${task.status === "completed" ? "completed" : ""} ${task.isImportant ? "important" : ""}`}
+                      className={`timeline-task ${
+                        task.status === "completed" ? "completed" : ""
+                      } ${task.isImportant ? "important" : ""}`}
                       onClick={() => handleOpenDayTasks(currentDate)}
                     >
                       <div className="task-time">{task.time}</div>
@@ -500,11 +601,16 @@ export default function StudyCalendar() {
       <div className="week-view-container">
         <div className="week-view-header">
           <h2>📅 Week View</h2>
+
           <button
             className="add-task-btn"
             onClick={() => setShowAddTaskModal(true)}
             disabled={!selectedPlan}
-            title={selectedPlan ? "Add task to this week" : "Please select a study plan first"}
+            title={
+              selectedPlan
+                ? "Add task to this week"
+                : "Please select a study plan first"
+            }
           >
             + Add Task
           </button>
@@ -513,14 +619,19 @@ export default function StudyCalendar() {
         <div className="week-grid">
           <div className="week-header">
             <div className="week-time-column"></div>
+
             {weekDates.map((dateStr, idx) => {
-              const date = new Date(dateStr + "T00:00:00");
+              const date = new Date(`${dateStr}T00:00:00`);
               const isToday = dateStr === getTodayLocalDateString();
+
               return (
                 <div
                   key={dateStr}
                   className={`week-day-header ${isToday ? "today" : ""}`}
-                  onClick={() => setViewMode("day") || setCurrentDate(new Date(dateStr + "T00:00:00"))}
+                  onClick={() => {
+                    setViewMode("day");
+                    setCurrentDate(new Date(`${dateStr}T00:00:00`));
+                  }}
                 >
                   <div className="day-name">{dayNames[idx]}</div>
                   <div className="day-date">{date.getDate()}</div>
@@ -533,18 +644,22 @@ export default function StudyCalendar() {
             {Array.from({ length: 24 }, (_, i) => (
               <div key={i} className="week-hour-row">
                 <div className="hour-label">{String(i).padStart(2, "0")}:00</div>
+
                 {weekDates.map((dateStr) => {
                   const tasksAtTime = getAllTasksForDate(dateStr).filter((task) =>
-                    task.time.startsWith(String(i).padStart(2, "0"))
+                    (task.time || "").startsWith(String(i).padStart(2, "0"))
                   );
+
                   return (
                     <div key={dateStr} className="week-cell">
                       {tasksAtTime.map((task) => (
                         <div
                           key={task._id}
-                          className={`week-task ${task.status === "completed" ? "completed" : ""} ${task.isImportant ? "important" : ""}`}
+                          className={`week-task ${
+                            task.status === "completed" ? "completed" : ""
+                          } ${task.isImportant ? "important" : ""}`}
                           onClick={() => {
-                            const dateObj = new Date(dateStr + "T00:00:00");
+                            const dateObj = new Date(`${dateStr}T00:00:00`);
                             handleOpenDayTasks(dateObj);
                           }}
                           title={task.title}
@@ -567,12 +682,11 @@ export default function StudyCalendar() {
   const MonthView = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
-    
+
     const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const weeks = [];
     let currentWeek = [];
@@ -588,17 +702,37 @@ export default function StudyCalendar() {
       }
     }
 
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
 
     return (
       <div className="month-view-container">
         <div className="month-header">
-          <h2>{monthNames[month]} {year}</h2>
+          <h2>
+            {monthNames[month]} {year}
+          </h2>
+
           <button
             className="add-task-btn"
             onClick={() => setShowAddTaskModal(true)}
             disabled={!selectedPlan}
-            title={selectedPlan ? "Add task to this month" : "Please select a study plan first"}
+            title={
+              selectedPlan
+                ? "Add task to this month"
+                : "Please select a study plan first"
+            }
           >
             + Add Task
           </button>
@@ -607,14 +741,16 @@ export default function StudyCalendar() {
         <div className="month-grid">
           <div className="month-weekdays">
             {dayNames.map((day) => (
-              <div key={day} className="weekday-header">{day}</div>
+              <div key={day} className="weekday-header">
+                {day}
+              </div>
             ))}
           </div>
 
           <div className="month-dates">
-            {weeks.map((week, weekIdx) =>
-              week.map((dateStr, dayIdx) => {
-                const date = new Date(dateStr + "T00:00:00");
+            {weeks.map((week) =>
+              week.map((dateStr) => {
+                const date = new Date(`${dateStr}T00:00:00`);
                 const tasksForDate = getAllTasksForDate(dateStr);
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = dateStr === getTodayLocalDateString();
@@ -622,26 +758,34 @@ export default function StudyCalendar() {
                 return (
                   <div
                     key={dateStr}
-                    className={`month-date ${isCurrentMonth ? "" : "other-month"} ${isToday ? "today" : ""}`}
+                    className={`month-date ${isCurrentMonth ? "" : "other-month"} ${
+                      isToday ? "today" : ""
+                    }`}
                     onClick={() => {
                       setViewMode("day");
-                      setCurrentDate(new Date(dateStr + "T00:00:00"));
+                      setCurrentDate(new Date(`${dateStr}T00:00:00`));
                     }}
                   >
                     <div className="date-number">{date.getDate()}</div>
+
                     <div className="date-tasks">
                       {tasksForDate.slice(0, 2).map((task) => (
                         <div
                           key={task._id}
-                          className={`task-dot ${task.isImportant ? "important" : ""}`}
+                          className={`task-dot ${
+                            task.isImportant ? "important" : ""
+                          }`}
                           title={task.title}
                         >
                           {task.isImportant && "⭐"}
                           {task.hasReminder && "🔔"}
                         </div>
                       ))}
+
                       {tasksForDate.length > 2 && (
-                        <span className="task-count">+{tasksForDate.length - 2}</span>
+                        <span className="task-count">
+                          +{tasksForDate.length - 2}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -653,6 +797,17 @@ export default function StudyCalendar() {
       </div>
     );
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="study-calendar-container">
+        <div className="error-banner">
+          <span>{error || "Please log in to access study plans"}</span>
+          <button onClick={() => setError("")}>✕</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="study-calendar-container">
@@ -668,10 +823,13 @@ export default function StudyCalendar() {
           <button className="nav-btn" onClick={navigatePrevious}>
             ← Previous
           </button>
+
           <div className="date-display">{getDateDisplay()}</div>
+
           <button className="nav-btn" onClick={navigateToday}>
             Today
           </button>
+
           <button className="nav-btn" onClick={navigateNext}>
             Next →
           </button>
@@ -692,11 +850,12 @@ export default function StudyCalendar() {
 
       <div className="plan-selector">
         <label>Study Plan:</label>
+
         <select
           value={selectedPlan?._id || ""}
           onChange={(e) => {
             const plan = plans.find((p) => p._id === e.target.value);
-            setSelectedPlan(plan);
+            setSelectedPlan(plan || null);
           }}
         >
           <option value="">Select a plan</option>
@@ -706,6 +865,7 @@ export default function StudyCalendar() {
             </option>
           ))}
         </select>
+
         <button
           className="create-plan-btn"
           onClick={() => setShowCreatePlanModal(true)}
@@ -713,6 +873,16 @@ export default function StudyCalendar() {
         >
           + New Plan
         </button>
+
+        {selectedPlan && (
+          <button
+            className="delete-plan-btn"
+            onClick={() => handleDeletePlan(selectedPlan._id)}
+            title="Delete selected study plan"
+          >
+            🗑 Delete Plan
+          </button>
+        )}
       </div>
 
       {/* VIEW TASK LIST BUTTON */}
@@ -725,6 +895,7 @@ export default function StudyCalendar() {
             setModalTasks(getAllTasksForDate(dateStr));
             setShowModalTaskDetails(true);
           }}
+          disabled={!selectedPlan}
         >
           📋 View Task List
         </button>
@@ -732,10 +903,14 @@ export default function StudyCalendar() {
 
       {/* CREATE PLAN MODAL */}
       {showCreatePlanModal && (
-        <div className="plan-modal-overlay" onClick={() => setShowCreatePlanModal(false)}>
+        <div
+          className="plan-modal-overlay"
+          onClick={() => setShowCreatePlanModal(false)}
+        >
           <div className="plan-modal" onClick={(e) => e.stopPropagation()}>
             <div className="plan-modal-header">
               <h3>Create New Study Plan</h3>
+
               <button
                 className="modal-close-btn"
                 onClick={() => setShowCreatePlanModal(false)}
@@ -767,6 +942,7 @@ export default function StudyCalendar() {
               >
                 Cancel
               </button>
+
               <button
                 className="btn-create"
                 onClick={handleCreatePlan}
@@ -781,10 +957,14 @@ export default function StudyCalendar() {
 
       {/* ADD TASK MODAL */}
       {showAddTaskModal && (
-        <div className="task-modal-overlay" onClick={() => setShowAddTaskModal(false)}>
+        <div
+          className="task-modal-overlay"
+          onClick={() => setShowAddTaskModal(false)}
+        >
           <div className="task-modal" onClick={(e) => e.stopPropagation()}>
             <div className="task-modal-header">
               <h3>Add New Task</h3>
+
               <button
                 className="modal-close-btn"
                 onClick={() => setShowAddTaskModal(false)}
@@ -816,6 +996,7 @@ export default function StudyCalendar() {
 
               <div className="form-group">
                 <label>Time</label>
+
                 <div className="time-picker-group">
                   <div className="time-inputs">
                     <input
@@ -827,12 +1008,14 @@ export default function StudyCalendar() {
                       onChange={(e) =>
                         setTaskFormData({
                           ...taskFormData,
-                          taskTimeHour: e.target.value
+                          taskTimeHour: e.target.value,
                         })
                       }
                       className="time-input hour-input"
                     />
+
                     <span className="time-separator">:</span>
+
                     <input
                       type="number"
                       min="0"
@@ -842,32 +1025,41 @@ export default function StudyCalendar() {
                       onChange={(e) =>
                         setTaskFormData({
                           ...taskFormData,
-                          taskTimeMinute: String(e.target.value).padStart(2, "0")
+                          taskTimeMinute: String(e.target.value).padStart(
+                            2,
+                            "0"
+                          ),
                         })
                       }
                       className="time-input minute-input"
                     />
                   </div>
+
                   <div className="period-buttons">
                     <button
                       type="button"
-                      className={`period-btn ${taskFormData.taskTimePeriod === "AM" ? "active" : ""}`}
+                      className={`period-btn ${
+                        taskFormData.taskTimePeriod === "AM" ? "active" : ""
+                      }`}
                       onClick={() =>
                         setTaskFormData({
                           ...taskFormData,
-                          taskTimePeriod: "AM"
+                          taskTimePeriod: "AM",
                         })
                       }
                     >
                       AM
                     </button>
+
                     <button
                       type="button"
-                      className={`period-btn ${taskFormData.taskTimePeriod === "PM" ? "active" : ""}`}
+                      className={`period-btn ${
+                        taskFormData.taskTimePeriod === "PM" ? "active" : ""
+                      }`}
                       onClick={() =>
                         setTaskFormData({
                           ...taskFormData,
-                          taskTimePeriod: "PM"
+                          taskTimePeriod: "PM",
                         })
                       }
                     >
@@ -885,7 +1077,7 @@ export default function StudyCalendar() {
                     onChange={(e) =>
                       setTaskFormData({
                         ...taskFormData,
-                        isImportant: e.target.checked
+                        isImportant: e.target.checked,
                       })
                     }
                   />
@@ -895,12 +1087,13 @@ export default function StudyCalendar() {
 
               <div className="form-group">
                 <label>Priority Level</label>
+
                 <select
                   value={taskFormData.priority}
                   onChange={(e) =>
                     setTaskFormData({
                       ...taskFormData,
-                      priority: e.target.value
+                      priority: e.target.value,
                     })
                   }
                   className="priority-select"
@@ -920,8 +1113,10 @@ export default function StudyCalendar() {
                       setTaskFormData({
                         ...taskFormData,
                         hasReminder: e.target.checked,
-                        reminderDate: e.target.checked ? formatDateToYMD(currentDate) : "",
-                        reminderTime: e.target.checked ? "09:00" : ""
+                        reminderDate: e.target.checked
+                          ? formatDateToYMD(currentDate)
+                          : "",
+                        reminderTime: e.target.checked ? "09:00" : "",
                       });
                     }}
                   />
@@ -933,7 +1128,9 @@ export default function StudyCalendar() {
                 <div className="reminder-section">
                   <div className="reminder-date-picker">
                     <label>Reminder Date</label>
+
                     <button
+                      type="button"
                       className="date-picker-btn"
                       onClick={() => setShowReminderCalendar(true)}
                     >
@@ -943,6 +1140,7 @@ export default function StudyCalendar() {
 
                   <div className="form-group">
                     <label>Reminder Time</label>
+
                     <div className="time-picker-group">
                       <div className="time-inputs">
                         <input
@@ -954,12 +1152,14 @@ export default function StudyCalendar() {
                           onChange={(e) =>
                             setTaskFormData({
                               ...taskFormData,
-                              reminderTimeHour: e.target.value
+                              reminderTimeHour: e.target.value,
                             })
                           }
                           className="time-input hour-input"
                         />
+
                         <span className="time-separator">:</span>
+
                         <input
                           type="number"
                           min="0"
@@ -969,32 +1169,44 @@ export default function StudyCalendar() {
                           onChange={(e) =>
                             setTaskFormData({
                               ...taskFormData,
-                              reminderTimeMinute: String(e.target.value).padStart(2, "0")
+                              reminderTimeMinute: String(
+                                e.target.value
+                              ).padStart(2, "0"),
                             })
                           }
                           className="time-input minute-input"
                         />
                       </div>
+
                       <div className="period-buttons">
                         <button
                           type="button"
-                          className={`period-btn ${taskFormData.reminderTimePeriod === "AM" ? "active" : ""}`}
+                          className={`period-btn ${
+                            taskFormData.reminderTimePeriod === "AM"
+                              ? "active"
+                              : ""
+                          }`}
                           onClick={() =>
                             setTaskFormData({
                               ...taskFormData,
-                              reminderTimePeriod: "AM"
+                              reminderTimePeriod: "AM",
                             })
                           }
                         >
                           AM
                         </button>
+
                         <button
                           type="button"
-                          className={`period-btn ${taskFormData.reminderTimePeriod === "PM" ? "active" : ""}`}
+                          className={`period-btn ${
+                            taskFormData.reminderTimePeriod === "PM"
+                              ? "active"
+                              : ""
+                          }`}
                           onClick={() =>
                             setTaskFormData({
                               ...taskFormData,
-                              reminderTimePeriod: "PM"
+                              reminderTimePeriod: "PM",
                             })
                           }
                         >
@@ -1015,7 +1227,7 @@ export default function StudyCalendar() {
                         onChange={(date) => {
                           setTaskFormData({
                             ...taskFormData,
-                            reminderDate: formatDateToYMD(date)
+                            reminderDate: formatDateToYMD(date),
                           });
                           setShowReminderCalendar(false);
                         }}
@@ -1036,6 +1248,7 @@ export default function StudyCalendar() {
               >
                 Cancel
               </button>
+
               <button
                 className="btn-create"
                 onClick={handleAddTask}
@@ -1049,7 +1262,11 @@ export default function StudyCalendar() {
       )}
 
       <div className="calendar-view-container">
-        {!selectedPlan ? (
+        {loading ? (
+          <div className="no-plan-message">
+            <p>Loading study plans...</p>
+          </div>
+        ) : !selectedPlan ? (
           <div className="no-plan-message">
             <p>Please select or create a study plan to view tasks</p>
           </div>

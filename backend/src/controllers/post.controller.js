@@ -34,7 +34,6 @@ exports.createPost = async (req, res) => {
         const isVideo = file.mimetype.startsWith("video/");
 
         if (isImage) {
-          // Add photo
           if (photos.length < 10) {
             photos.push(filePath);
             console.log("✅ Photo added:", filePath);
@@ -42,16 +41,20 @@ exports.createPost = async (req, res) => {
             console.log("⚠️ Too many photos (max 10)");
           }
         } else if (isVideo) {
-          // Validate video size (max 5MB)
           const videoSizeMB = fileSize / (1024 * 1024);
           if (videoSizeMB > 5) {
-            console.log("❌ Video too large:", videoSizeMB.toFixed(2), "MB (max 5MB)");
-            return res.status(400).json({ 
-              message: `Video must be under 5MB. Your video is ${videoSizeMB.toFixed(2)}MB` 
+            console.log(
+              "❌ Video too large:",
+              videoSizeMB.toFixed(2),
+              "MB (max 5MB)"
+            );
+            return res.status(400).json({
+              message: `Video must be under 5MB. Your video is ${videoSizeMB.toFixed(
+                2
+              )}MB`,
             });
           }
 
-          // Only allow 1 video
           if (!video) {
             video = filePath;
             console.log("✅ Video added:", filePath);
@@ -62,7 +65,6 @@ exports.createPost = async (req, res) => {
       }
     }
 
-    // Validate: at least photos or video OR content
     if (photos.length === 0 && !video) {
       console.log("ℹ️ No media attached, post with text only");
     }
@@ -75,7 +77,7 @@ exports.createPost = async (req, res) => {
       photos,
       video,
       comments: [],
-      commentsCount: 0
+      commentsCount: 0,
     });
 
     await newPost.save();
@@ -86,7 +88,7 @@ exports.createPost = async (req, res) => {
 
     res.status(201).json({
       message: "Post created successfully",
-      post: newPost
+      post: newPost,
     });
   } catch (err) {
     console.error("❌ Error creating post:", err.message);
@@ -99,26 +101,23 @@ exports.getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const sortBy = req.query.sortBy || "createdAt"; // createdAt, likeCount
+    const sortBy = req.query.sortBy || "createdAt";
     const tag = req.query.tag;
     const search = req.query.search;
 
     let filter = {};
 
-    // Search by title or content
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
-        { content: { $regex: search, $options: "i" } }
+        { content: { $regex: search, $options: "i" } },
       ];
     }
 
-    // Filter by tag
     if (tag) {
       filter.tags = tag;
     }
 
-    // Sorting options
     let sortOptions = {};
     if (sortBy === "likeCount") {
       sortOptions = { likeCount: -1 };
@@ -149,8 +148,8 @@ exports.getAllPosts = async (req, res) => {
         totalPosts,
         totalPages: Math.ceil(totalPosts / limit) || 1,
         currentPage: page,
-        limit
-      }
+        limit,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -177,8 +176,8 @@ exports.getPostById = async (req, res) => {
         path: "comments",
         populate: {
           path: "author",
-          select: "name avatar email"
-        }
+          select: "name avatar email",
+        },
       })
       .populate("reactions");
 
@@ -188,7 +187,7 @@ exports.getPostById = async (req, res) => {
 
     res.status(200).json({
       message: "Post retrieved successfully",
-      post
+      post,
     });
   } catch (err) {
     console.error(err);
@@ -209,12 +208,12 @@ exports.updatePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Check if user is the author
     if (post.author.toString() !== userId) {
-      return res.status(403).json({ message: "You can only edit your own posts" });
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own posts" });
     }
 
-    // Update fields
     if (title) post.title = title;
     if (content) post.content = content;
     if (tags) post.tags = tags;
@@ -227,7 +226,7 @@ exports.updatePost = async (req, res) => {
 
     res.status(200).json({
       message: "Post updated successfully",
-      post
+      post,
     });
   } catch (err) {
     console.error(err);
@@ -240,6 +239,7 @@ exports.deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user.id;
+    const userRole = req.user.role;
 
     const post = await Post.findById(postId);
 
@@ -247,26 +247,88 @@ exports.deletePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Check if user is the author
-    if (post.author.toString() !== userId) {
-      return res.status(403).json({ message: "You can only delete your own posts" });
+    const isOwner = post.author.toString() === userId;
+    const isAdmin = userRole === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        message: "You are not authorized to delete this post",
+      });
     }
 
-    // Delete all saved posts
+    // Delete all comments belonging to this post
+    await Comment.deleteMany({ post: postId });
+
+    // Delete all saved-post records for this post
     await SavedPost.deleteMany({ post: postId });
 
-    // Delete all reactions
+    // Delete all reactions for this post
     await Reaction.deleteMany({ post: postId });
 
-    // Delete the post
+    // Delete the post itself
     await Post.findByIdAndDelete(postId);
 
     res.status(200).json({
-      message: "Post deleted successfully"
+      message: "Post deleted successfully",
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error deleting post:", err.message);
     res.status(500).json({ message: "Failed to delete post" });
+  }
+};
+
+// ============ DELETE COMMENT ============
+exports.deleteComment = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const commentId = req.params.commentId;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Safety: make sure the comment belongs to the selected post
+    if (comment.post.toString() !== postId) {
+      return res.status(400).json({ message: "Comment does not belong to this post" });
+    }
+
+    const isCommentOwner = comment.author.toString() === userId;
+    const isPostOwner = post.author.toString() === userId;
+    const isAdmin = userRole === "admin";
+
+    if (!isCommentOwner && !isPostOwner && !isAdmin) {
+      return res.status(403).json({
+        message: "You are not authorized to delete this comment",
+      });
+    }
+
+    // Remove comment reference from post
+    post.comments = post.comments.filter(
+      (id) => id.toString() !== commentId
+    );
+    post.commentsCount = post.comments.length;
+    await post.save();
+
+    // Delete the comment document
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      commentsCount: post.commentsCount,
+    });
+  } catch (err) {
+    console.error("❌ Error deleting comment:", err.message);
+    res.status(500).json({ message: "Failed to delete comment" });
   }
 };
 
@@ -285,19 +347,16 @@ exports.toggleLikePost = async (req, res) => {
     const isLiked = post.likes.includes(userId);
 
     if (isLiked) {
-      // Unlike post
-      post.likes = post.likes.filter(id => id.toString() !== userId);
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
       post.likeCount = Math.max(0, post.likeCount - 1);
     } else {
-      // Like post
       post.likes.push(userId);
       post.likeCount += 1;
 
-      // Create notification for post author
       const sender = userId;
       const recipient = post.author;
       const message = `Someone liked your post`;
-      
+
       await notificationController.createNotification(
         "like",
         sender,
@@ -314,8 +373,8 @@ exports.toggleLikePost = async (req, res) => {
       post: {
         _id: post._id,
         likeCount: post.likeCount,
-        isLiked: !isLiked
-      }
+        isLiked: !isLiked,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -337,25 +396,23 @@ exports.toggleSavePost = async (req, res) => {
 
     const savedPost = await SavedPost.findOne({
       user: userId,
-      post: postId
+      post: postId,
     });
 
     if (savedPost) {
-      // Unsave post
       await SavedPost.deleteOne({ _id: savedPost._id });
       res.status(200).json({
         message: "Post unsaved",
-        isSaved: false
+        isSaved: false,
       });
     } else {
-      // Save post
       await SavedPost.create({
         user: userId,
-        post: postId
+        post: postId,
       });
       res.status(200).json({
         message: "Post saved",
-        isSaved: true
+        isSaved: true,
       });
     }
   } catch (err) {
@@ -374,6 +431,7 @@ exports.getUserSavedPosts = async (req, res) => {
     const savedPosts = await SavedPost.find({ user: userId })
       .populate({
         path: "post",
+        populate: { path: "author", select: "name avatar email" },
         populate: [
           { path: "author", select: "name avatar email" },
           {
@@ -393,6 +451,12 @@ exports.getUserSavedPosts = async (req, res) => {
 
     res.status(200).json({
       message: "Saved posts retrieved",
+      savedPosts: savedPosts.map((s) => s.post),
+      pagination: {
+        total: totalSaved,
+        pages: Math.ceil(totalSaved / limit),
+        currentPage: page,
+      },
       posts: savedPosts.map(s => s.post).filter(p => p !== null),
       pagination: {
         totalPosts: totalSaved,
@@ -410,16 +474,14 @@ exports.getUserSavedPosts = async (req, res) => {
 // ============ GET USER'S POSTS ============
 exports.getUserPosts = async (req, res) => {
   try {
-    // Use authenticated user's ID from the request, or from params if provided
     const userId = req.params.userId || req.user.id;
     console.log("🔍 getUserPosts called");
     console.log("Received userId:", userId);
     console.log("Req.user:", req.user);
-    
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    // Try both ObjectId conversion and string matching
     try {
       const objectIdUserId = new ObjectId(userId);
       console.log("Converted to ObjectId:", objectIdUserId);
@@ -427,7 +489,6 @@ exports.getUserPosts = async (req, res) => {
       console.log("Failed to convert to ObjectId:", userId);
     }
 
-    // Query with string ID (let Mongoose handle conversion)
     const totalUserPosts = await Post.countDocuments({ author: userId });
     console.log("Total posts found with userId:", totalUserPosts);
 
@@ -438,7 +499,10 @@ exports.getUserPosts = async (req, res) => {
       .skip((page - 1) * limit);
 
     console.log("User posts retrieved:", userPosts.length);
-    console.log("Posts details:", userPosts.map(p => ({ _id: p._id, title: p.title, author: p.author })));
+    console.log(
+      "Posts details:",
+      userPosts.map((p) => ({ _id: p._id, title: p.title, author: p.author }))
+    );
 
     res.status(200).json({
       message: "User posts retrieved",
@@ -446,12 +510,14 @@ exports.getUserPosts = async (req, res) => {
       pagination: {
         total: totalUserPosts,
         pages: Math.ceil(totalUserPosts / limit),
-        currentPage: page
-      }
+        currentPage: page,
+      },
     });
   } catch (err) {
     console.error("❌ Error in getUserPosts:", err.message);
-    res.status(500).json({ message: "Failed to retrieve user posts", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve user posts", error: err.message });
   }
 };
 
@@ -462,35 +528,29 @@ exports.addComment = async (req, res) => {
     const { content } = req.body;
     const userId = req.user.id;
 
-    // Validation
     if (!content || content.trim() === "") {
       return res.status(400).json({ message: "Comment content is required" });
     }
 
-    // Find post
     const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Create comment
     const newComment = new Comment({
       content: content.trim(),
       author: userId,
-      post: id
+      post: id,
     });
 
-    // Save comment
     await newComment.save();
 
-    // Update post
     post.comments.push(newComment._id);
     post.commentsCount = post.comments.length;
     await post.save();
 
-    // Create notification for post author
     const message = `Someone commented on your post`;
-    
+
     await notificationController.createNotification(
       "comment",
       userId,
@@ -500,12 +560,14 @@ exports.addComment = async (req, res) => {
       newComment._id
     );
 
-    // Populate and return
-    const populatedComment = await newComment.populate("author", "name avatar email");
+    const populatedComment = await newComment.populate(
+      "author",
+      "name avatar email"
+    );
 
     res.status(201).json({
       message: "Comment added successfully",
-      comment: populatedComment
+      comment: populatedComment,
     });
   } catch (err) {
     console.error("Error adding comment:", err.message);

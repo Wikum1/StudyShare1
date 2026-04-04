@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import "./AdminActivities.css";
 
 export default function AdminActivities() {
   const token = localStorage.getItem("token");
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadActivities = async () => {
@@ -17,6 +19,8 @@ export default function AdminActivities() {
         setActivities(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -24,21 +28,42 @@ export default function AdminActivities() {
   }, [token]);
 
   return (
-    <div>
-      <div className="admin-page-header">
-        <h1>Activities</h1>
-        <p>Track recent platform actions.</p>
+    <div className="admin-activities-page">
+      {/* HEADER */}
+      <div className="admin-header">
+        <h1>Recent Activities</h1>
+        <p>Track what’s happening across the platform</p>
       </div>
 
-      <div className="activity-list">
-        {activities.length === 0 ? (
-          <div className="activity-item">No activities found</div>
+      {/* CONTENT */}
+      <div className="activity-container">
+        {loading ? (
+          <div className="activity-empty">Loading activities...</div>
+        ) : activities.length === 0 ? (
+          <div className="activity-empty">
+            <h3>No activities yet</h3>
+            <p>System activity will appear here</p>
+          </div>
         ) : (
-          activities.map((activity, index) => (
-            <div key={index} className="activity-item">
-              {activity.text || activity.message || activity}
-            </div>
-          ))
+          <div className="timeline">
+            {activities.map((activity, index) => (
+              <div key={index} className="timeline-item">
+                <div className="timeline-dot" />
+
+                <div className="timeline-content">
+                  <p className="activity-text">
+                    {activity.text || activity.message || activity}
+                  </p>
+
+                  <span className="activity-time">
+                    {activity.time
+                      ? new Date(activity.time).toLocaleString()
+                      : "Just now"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
