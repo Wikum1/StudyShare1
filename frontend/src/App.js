@@ -22,6 +22,7 @@ import RegisterPage from "./pages/auth/RegisterPage";
 /* Dashboard Pages */
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
+import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -129,6 +130,15 @@ function App() {
           element={
             <DashboardLayout>
               <ProfilePage />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <DashboardLayout>
+              <NotificationsPage />
             </DashboardLayout>
           }
         />

@@ -47,14 +47,13 @@ export default function DashboardNavbar() {
             Study Planner
           </NavLink>
 
-          {/* <NavLink to="/dashboard/profile">
-          <NavLink to="/dashboard/study-planner">
-            Study Planner
-          </NavLink>
-
           <NavLink to="/dashboard/profile">
             Profile
-          </NavLink> */}
+          </NavLink>
+
+          <NavLink to="/dashboard/notifications">
+            Notifications
+          </NavLink>
 
         </div>
 

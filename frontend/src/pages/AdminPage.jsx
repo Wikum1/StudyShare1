@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./AdminPage.css";
 import adminImage from "../assets/admin & notification.jpg";
 
@@ -13,13 +14,22 @@ export default function AdminPage() {
             Manage resource approvals, monitor platform activity and
             control system notifications across StudyShare.
           </p>
+          <p className="admin-hero-admin-note">
+            <strong>Administrators:</strong> Log in to view{" "}
+            <strong>registered student accounts</strong> (created via the{" "}
+            <Link to="/register">Register</Link> page) and their profiles — names,
+            emails, and student details — in the admin dashboard.
+          </p>
 
          <div className="hero-buttons">
+            <Link to="/login">
+              <button type="button" className="primary-btn">Admin login</button>
+            </Link>
             <a href="/upload">
-              <button className="primary-btn">Get Started</button>
+              <button type="button" className="secondary-btn">Upload (students)</button>
             </a>
             <a href="/contact">
-              <button className="secondary-btn">Contact Us</button>
+              <button type="button" className="secondary-btn">Contact Us</button>
             </a>
           </div>
         </div>

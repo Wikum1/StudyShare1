@@ -1,0 +1,54 @@
+/* Shared: light green full-bleed page below DashboardNavbar (matches main padding in App.js) */
+.dashboard-page-shell {
+  --dashboard-main-pad: 30px;
+  --dashboard-nav-h: 78px;
+
+  max-width: none;
+  margin: calc(-1 * var(--dashboard-main-pad));
+  padding: calc(var(--dashboard-main-pad) + 28px)
+    calc(var(--dashboard-main-pad) + 18px)
+    calc(var(--dashboard-main-pad) + 44px);
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: linear-gradient(
+    165deg,
+    #f0fdf4 0%,
+    #dcfce7 38%,
+    #bbf7d0 100%
+  );
+  border-radius: 0;
+}
+
+.dashboard-page-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    110% 70% at 15% 10%,
+    rgba(255, 255, 255, 0.75),
+    transparent 52%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-page-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .dashboard-page-shell {
+    padding: calc(var(--dashboard-main-pad) + 22px)
+      calc(var(--dashboard-main-pad) + 14px)
+      calc(var(--dashboard-main-pad) + 34px);
+  }
+}

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import resourceService from "../services/resource.service";
 import "./UploadResource.css";
 
 export default function UploadResource() {
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -45,6 +47,8 @@ export default function UploadResource() {
       await resourceService.uploadResource(data);
 
       alert("Resource uploaded successfully!");
+      // Show the student the upload notification immediately.
+      navigate("/dashboard/notifications");
 
       setFormData({
         title: "",
@@ -75,7 +79,7 @@ export default function UploadResource() {
 
         <form className="upload-form" onSubmit={handleSubmit}>
 
-          <div className="form-group">
+          <div className="form-group"> 
             <label>Title</label>
             <input
               name="title"

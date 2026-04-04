@@ -22,6 +22,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["student", "admin"],
       default: "student"
+    },
+    university: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    year: {
+      type: Number,
+      default: null,
+    },
+    modules: {
+      type: [String],
+      default: []
     }
   },
   { timestamps: true }
