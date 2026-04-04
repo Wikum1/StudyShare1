@@ -8,7 +8,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    phoneNumber: ""
   });
 
   const [error, setError] = useState("");
@@ -30,17 +31,21 @@ export default function RegisterPage() {
     const name = form.name.trim();
     const email = form.email.trim().toLowerCase();
     const password = form.password;
+    const phoneNumber = form.phoneNumber.trim();
 
-    if (!name || !email || !password) {
+    // Required fields validation
+    if (!name || !email || !password || !phoneNumber) {
       setError("Please fill all fields");
       return;
     }
 
+    // Name validation
     if (name.length < 3) {
       setError("Full Name must be at least 3 characters");
       return;
     }
 
+    // SLIIT email validation
     const emailRegex = /^it\d{8}@my\.sliit\.lk$/;
 
     if (!emailRegex.test(email)) {
@@ -48,10 +53,29 @@ export default function RegisterPage() {
       return;
     }
 
+    // Password validation
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
+
+    // Phone number validation (WhatsApp format)
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ""))) {
+      setError("Phone number must be 10-15 digits (e.g., +94771234567)");
+      return;
+    }
+
+    /* TEMP REGISTER */
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        name,
+        email,
+        password,
+        phoneNumber
+      })
+    );
 
     try {
       setLoading(true);
@@ -64,7 +88,8 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name,
           email,
-          password
+          password,
+          phoneNumber
         })
       });
 
@@ -75,8 +100,9 @@ export default function RegisterPage() {
         return;
       }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
+      // Merge token into user object
+      const userWithToken = { ...data.user, token: data.token };
+      localStorage.setItem("user", JSON.stringify(userWithToken));
 
       if (data.user.role === "admin") {
         navigate("/admin-dashboard");
@@ -124,6 +150,15 @@ export default function RegisterPage() {
             value={form.password}
             onChange={handleChange}
             minLength={6}
+            required
+          />
+
+          <input
+            type="tel"
+            name="phoneNumber"
+            placeholder="Phone Number (e.g., +94771234567)"
+            value={form.phoneNumber}
+            onChange={handleChange}
             required
           />
 

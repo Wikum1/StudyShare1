@@ -215,4 +215,25 @@
   .dashboard-right {
     gap: 10px;
   }
+.theme-toggle {
+  margin-right: 15px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: #e5e7eb;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* DARK MODE */
+body.dark .theme-toggle {
+  background: #334155;
+  color: white;
+}
+
 }

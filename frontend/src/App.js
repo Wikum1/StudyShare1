@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 
 /* Dashboard Components */
 import DashboardNavbar from "./components/DashboardNavbar";
+import ReminderToast from "./components/ReminderToast";
 
 /* Public Pages */
 import Home from "./pages/Home";
@@ -24,6 +25,11 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
+<<<<<<< HEAD
+=======
+import AdminDashboard from "./pages/AdminDashboard";
+import StudyCalendar from "./pages/StudyCalendar";
+>>>>>>> a67744694ef241bae4f3463ad6e6db952ee6a04e
 
 /* Admin Pages */
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -36,6 +42,7 @@ import AdminActivities from "./pages/admin/AdminActivities";
 function PublicLayout() {
   return (
     <>
+      <ReminderToast />
       <Navbar />
       <main style={{ minHeight: "80vh" }}>
         <Outlet />
@@ -49,6 +56,7 @@ function PublicLayout() {
 function DashboardLayout() {
   return (
     <>
+      <ReminderToast />
       <DashboardNavbar />
       <main style={{ minHeight: "80vh", padding: "30px" }}>
         <Outlet />
@@ -83,6 +91,7 @@ function App() {
           <Route path="my-resources" element={<MyResources />} />
         </Route>
 
+<<<<<<< HEAD
         {/* ================= ADMIN DASHBOARD ================= */}
         <Route path="/admin-dashboard" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -90,6 +99,52 @@ function App() {
           <Route path="resources" element={<AdminResources />} />
           <Route path="activities" element={<AdminActivities />} />
         </Route>
+=======
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardLayout>
+              <DashboardHome />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/profile"
+          element={
+            <DashboardLayout>
+              <ProfilePage />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/dashboard/upload"
+          element={
+            <DashboardLayout>
+              <UploadResource />
+            </DashboardLayout>
+          }
+        />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
+        <Route
+          path="/dashboard/my-resources"
+          element={
+            <DashboardLayout>
+              <MyResources />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/dashboard/study-planner"
+          element={
+            <DashboardLayout>
+              <StudyCalendar />
+            </DashboardLayout>
+          }
+        />
+>>>>>>> a67744694ef241bae4f3463ad6e6db952ee6a04e
       </Routes>
     </Router>
   );
