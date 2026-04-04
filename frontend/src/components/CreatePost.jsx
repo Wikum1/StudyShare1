@@ -6,12 +6,80 @@ const CreatePost = ({ onClose, onPostCreated }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [video, setVideo] = useState(null);
+  const [videoPreviews, setVideoPreviews] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const API_BASE = "http://localhost:5000/api";
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const token = userData?.token;
+
+  // Handle photo selection
+  const handlePhotoSelect = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Max 10 photos
+    if (files.length + photos.length > 10) {
+      setError("Maximum 10 photos allowed");
+      return;
+    }
+
+    const newPhotos = [...photos, ...files];
+    setPhotos(newPhotos);
+
+    // Create previews
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreviews(prev => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setError("");
+  };
+
+  // Handle video selection
+  const handleVideoSelect = (e) => {
+    const file = e.target.files?.[0];
+    
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 5) {
+      setError(`Video must be under 5MB. Your file is ${fileSizeMB.toFixed(2)}MB`);
+      return;
+    }
+
+    setVideo(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setVideoPreviews(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    setError("");
+  };
+
+  // Remove photo
+  const removePhoto = (index) => {
+    const newPhotos = photos.filter((_, i) => i !== index);
+    const newPreviews = photoPreviews.filter((_, i) => i !== index);
+    setPhotos(newPhotos);
+    setPhotoPreviews(newPreviews);
+  };
+
+  // Remove video
+  const removeVideo = () => {
+    setVideo(null);
+    setVideoPreviews(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,16 +97,29 @@ const CreatePost = ({ onClose, onPostCreated }) => {
         .map(tag => tag.trim())
         .filter(tag => tag !== "");
 
+      // Create FormData for file uploads
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("content", content.trim());
+      formData.append("tags", JSON.stringify(tagsArray));
+
+      // Add photos
+      photos.forEach(photo => {
+        formData.append("files", photo);
+      });
+
+      // Add video
+      if (video) {
+        formData.append("files", video);
+      }
+
       const response = await axios.post(
         `${API_BASE}/posts`,
-        {
-          title: title.trim(),
-          content: content.trim(),
-          tags: tagsArray
-        },
+        formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
           }
         }
       );
@@ -47,6 +128,10 @@ const CreatePost = ({ onClose, onPostCreated }) => {
       setTitle("");
       setContent("");
       setTags("");
+      setPhotos([]);
+      setPhotoPreviews([]);
+      setVideo(null);
+      setVideoPreviews(null);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create post");
       console.error(err);
@@ -103,6 +188,70 @@ const CreatePost = ({ onClose, onPostCreated }) => {
             />
             <span className="hint">Separate tags with commas</span>
           </div>
+
+          {/* Photo Upload */}
+          <div className="form-group">
+            <label htmlFor="photos">Add Photos (max 10)</label>
+            <input
+              id="photos"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handlePhotoSelect}
+              className="form-input-file"
+            />
+            <span className="hint">JPEG, PNG, GIF, WebP • {photos.length}/10 photos</span>
+          </div>
+
+          {/* Photo Previews */}
+          {photoPreviews.length > 0 && (
+            <div className="media-previews">
+              <div className="photos-grid">
+                {photoPreviews.map((preview, idx) => (
+                  <div key={idx} className="photo-preview">
+                    <img src={preview} alt={`Preview ${idx}`} />
+                    <button
+                      type="button"
+                      className="btn-remove-media"
+                      onClick={() => removePhoto(idx)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Video Upload */}
+          <div className="form-group">
+            <label htmlFor="video">Add Video (max 1, under 5MB)</label>
+            <input
+              id="video"
+              type="file"
+              accept="video/*"
+              onChange={handleVideoSelect}
+              className="form-input-file"
+              disabled={!!video}
+            />
+            <span className="hint">MP4, MPEG, MOV, AVI • Max 5MB</span>
+          </div>
+
+          {/* Video Preview */}
+          {videoPreviews && (
+            <div className="media-previews">
+              <div className="video-preview">
+                <video src={videoPreviews} controls />
+                <button
+                  type="button"
+                  className="btn-remove-media"
+                  onClick={removeVideo}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
 
           {error && <div className="error-message">{error}</div>}
 

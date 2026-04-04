@@ -30,12 +30,28 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE}/notifications?page=1&limit=5`,
+        `${API_BASE}/notifications?page=1&limit=10`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotifications(response.data.notifications || []);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  // Mark notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    try {
+      await axios.put(
+        `${API_BASE}/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications(notifications.map(notif => 
+        notif._id === notificationId ? { ...notif, read: true } : notif
+      ));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -170,7 +186,10 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
         </button>
         <button
           className={`tab-btn ${activeTab === "notifications" ? "active" : ""}`}
-          onClick={() => setActiveTab("notifications")}
+          onClick={() => {
+            setActiveTab("notifications");
+            fetchNotifications();
+          }}
         >
           🔔 Alerts
         </button>
@@ -324,16 +343,21 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                 <div
                   key={notif._id}
                   className={`notification-item ${!notif.read ? "unread" : ""}`}
-                  onClick={() => setSelectedNotification(notif)}
+                  onClick={() => {
+                    setSelectedNotification(notif);
+                    if (!notif.read) {
+                      markNotificationAsRead(notif._id);
+                    }
+                  }}
                   style={{ cursor: "pointer" }}
                 >
                   {/* User Avatar */}
                   <div className="notif-avatar">
-                    {notif.actor?.avatar ? (
-                      <img src={notif.actor.avatar} alt={notif.actor?.name} />
+                    {notif.sender?.avatar ? (
+                      <img src={notif.sender.avatar} alt={notif.sender?.name} />
                     ) : (
                       <div className="avatar-placeholder">
-                        {notif.actor?.name?.charAt(0).toUpperCase() || "U"}
+                        {notif.sender?.name?.charAt(0).toUpperCase() || "U"}
                       </div>
                     )}
                   </div>
@@ -341,7 +365,7 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                   {/* Notification Content */}
                   <div className="notif-details">
                     <div className="notif-action">
-                      <span className="notif-actor-name">{notif.actor?.name || "Someone"}</span>
+                      <span className="notif-actor-name">{notif.sender?.name || "Someone"}</span>
                       <span className="notif-action-type">
                         {notif.type === "like" && "liked"}
                         {notif.type === "comment" && "commented on"}
@@ -384,15 +408,15 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
 
               <div className="notif-detail-content">
                 <div className="notif-detail-user">
-                  {selectedNotification.actor?.avatar ? (
-                    <img src={selectedNotification.actor.avatar} alt={selectedNotification.actor?.name} />
+                  {selectedNotification.sender?.avatar ? (
+                    <img src={selectedNotification.sender.avatar} alt={selectedNotification.sender?.name} />
                   ) : (
                     <div className="avatar-placeholder">
-                      {selectedNotification.actor?.name?.charAt(0).toUpperCase() || "U"}
+                      {selectedNotification.sender?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
                   <div>
-                    <p className="detail-user-name">{selectedNotification.actor?.name || "Someone"}</p>
+                    <p className="detail-user-name">{selectedNotification.sender?.name || "Someone"}</p>
                     <p className="detail-action">
                       {selectedNotification.type === "like" && "👍 Liked your post"}
                       {selectedNotification.type === "comment" && "💬 Commented on your post"}
@@ -409,14 +433,14 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                   </div>
                 )}
 
-                {selectedNotification.comment && (
+                {selectedNotification.relatedComment && (
                   <div className="notif-detail-comment">
                     <h5>Comment:</h5>
-                    <p className="detail-comment-text">{selectedNotification.comment?.content || selectedNotification.message}</p>
+                    <p className="detail-comment-text">{selectedNotification.relatedComment?.content || selectedNotification.message}</p>
                   </div>
                 )}
 
-                {selectedNotification.message && !selectedNotification.comment && (
+                {selectedNotification.message && !selectedNotification.relatedComment && (
                   <p className="detail-message">{selectedNotification.message}</p>
                 )}
 

@@ -13,6 +13,7 @@ const reminderRoutes = require("./routes/reminder.routes");
 const postRoutes = require("./routes/post.routes");
 const reactionRoutes = require("./routes/reaction.routes");
 const userRoutes = require("./routes/user.routes");
+const notificationRoutes = require("./routes/notification.routes");
 const reminderScheduler = require("./services/reminderScheduler");
 
 const app = express();
@@ -54,6 +55,7 @@ app.use("/api/reminders", reminderRoutes); // ✅ reminder notifications
 app.use("/api/posts", postRoutes); // ✅ Wall feature - posts
 app.use("/api/reactions", reactionRoutes); // ✅ Wall feature - emoji reactions
 app.use("/api/users", userRoutes); // ✅ User profiles and follow system
+app.use("/api/notifications", notificationRoutes); // ✅ Like and comment notifications
 
 // Catch-all 404 handler
 app.use((req, res) => {

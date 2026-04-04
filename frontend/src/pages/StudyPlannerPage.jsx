@@ -6,7 +6,8 @@ export default function StudyPlannerPage() {
     <div className="planner-page">
 
       {/* HERO SECTION */}
-      <div className="planner-hero">
+      <div className="planner-hero" style={{ backgroundImage: `url(${plannerImage})` }}>
+        <div className="planner-hero-overlay"></div>
         <div className="planner-hero-content">
           <h1>📅 Study Planner</h1>
           <p>
@@ -14,7 +15,7 @@ export default function StudyPlannerPage() {
             study goals efficiently in one smart planner.
           </p>
 
-        <div className="hero-buttons">
+          <div className="hero-buttons">
             <a href="/upload">
               <button className="primary-btn">Get Started</button>
             </a>

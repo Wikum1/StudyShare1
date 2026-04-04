@@ -1,7 +1,9 @@
 const Post = require("../models/Post.model");
+const Comment = require("../models/Comment.model");
 const SavedPost = require("../models/SavedPost.model");
 const Reaction = require("../models/Reaction.model");
 const User = require("../models/User.model");
+const notificationController = require("./notification.controller");
 const { ObjectId } = require("mongoose").Types;
 
 // ============ CREATE POST ============
@@ -18,16 +20,67 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({ message: "Title and content are required" });
     }
 
+    // Process uploaded files
+    let photos = [];
+    let video = null;
+
+    if (req.files && req.files.length > 0) {
+      console.log("📁 Processing", req.files.length, "files");
+
+      for (const file of req.files) {
+        const fileSize = file.size;
+        const filePath = `/uploads/posts/${file.filename}`;
+        const isImage = file.mimetype.startsWith("image/");
+        const isVideo = file.mimetype.startsWith("video/");
+
+        if (isImage) {
+          // Add photo
+          if (photos.length < 10) {
+            photos.push(filePath);
+            console.log("✅ Photo added:", filePath);
+          } else {
+            console.log("⚠️ Too many photos (max 10)");
+          }
+        } else if (isVideo) {
+          // Validate video size (max 5MB)
+          const videoSizeMB = fileSize / (1024 * 1024);
+          if (videoSizeMB > 5) {
+            console.log("❌ Video too large:", videoSizeMB.toFixed(2), "MB (max 5MB)");
+            return res.status(400).json({ 
+              message: `Video must be under 5MB. Your video is ${videoSizeMB.toFixed(2)}MB` 
+            });
+          }
+
+          // Only allow 1 video
+          if (!video) {
+            video = filePath;
+            console.log("✅ Video added:", filePath);
+          } else {
+            console.log("⚠️ Only 1 video allowed");
+          }
+        }
+      }
+    }
+
+    // Validate: at least photos or video OR content
+    if (photos.length === 0 && !video) {
+      console.log("ℹ️ No media attached, post with text only");
+    }
+
     const newPost = new Post({
       title,
       content,
       author: userId,
-      tags: tags || []
+      tags: tags || [],
+      photos,
+      video,
+      comments: [],
+      commentsCount: 0
     });
 
     await newPost.save();
-    console.log("✅ Post saved. Author field:", newPost.author);
-    console.log("Post ID:", newPost._id);
+    console.log("✅ Post saved. ID:", newPost._id);
+    console.log("Photos:", photos.length, "| Video:", !!video);
 
     await newPost.populate("author", "name avatar email");
 
@@ -109,6 +162,13 @@ exports.getPostById = async (req, res) => {
       { new: true }
     )
       .populate("author", "name avatar email bio followers")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "name avatar email"
+        }
+      })
       .populate("reactions");
 
     if (!post) {
@@ -221,6 +281,19 @@ exports.toggleLikePost = async (req, res) => {
       // Like post
       post.likes.push(userId);
       post.likeCount += 1;
+
+      // Create notification for post author
+      const sender = userId;
+      const recipient = post.author;
+      const message = `Someone liked your post`;
+      
+      await notificationController.createNotification(
+        "like",
+        sender,
+        recipient,
+        postId,
+        message
+      );
     }
 
     await post.save();
@@ -358,5 +431,63 @@ exports.getUserPosts = async (req, res) => {
   } catch (err) {
     console.error("❌ Error in getUserPosts:", err.message);
     res.status(500).json({ message: "Failed to retrieve user posts", error: err.message });
+  }
+};
+
+// ============ ADD COMMENT ============
+exports.addComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    // Validation
+    if (!content || content.trim() === "") {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    // Find post
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Create comment
+    const newComment = new Comment({
+      content: content.trim(),
+      author: userId,
+      post: id
+    });
+
+    // Save comment
+    await newComment.save();
+
+    // Update post
+    post.comments.push(newComment._id);
+    post.commentsCount = post.comments.length;
+    await post.save();
+
+    // Create notification for post author
+    const message = `Someone commented on your post`;
+    
+    await notificationController.createNotification(
+      "comment",
+      userId,
+      post.author,
+      id,
+      message,
+      newComment._id
+    );
+
+    // Populate and return
+    const populatedComment = await newComment.populate("author", "name avatar email");
+
+    res.status(201).json({
+      message: "Comment added successfully",
+      comment: populatedComment
+    });
+  } catch (err) {
+    console.error("Error adding comment:", err.message);
+    res.status(500).json({ message: "Failed to add comment" });
   }
 };

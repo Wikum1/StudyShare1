@@ -1,14 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const upload = require("../middleware/upload.middleware");
+const { uploadMiddleware } = require("../middleware/upload.middleware");
 const controller = require("../controllers/resource.controller");
 
 /* ================= RESOURCE ROUTES ================= */
 
 /* Upload resource */
-router.post("/",upload, controller.createResource,
-);
+router.post("/", uploadMiddleware, controller.createResource);
 
 /* Get user resources */
 router.get("/my", controller.getMyResources);

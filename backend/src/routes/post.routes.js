@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const postController = require("../controllers/post.controller");
 const { protect } = require("../middleware/auth.middleware");
+const { postMediaMiddleware } = require("../middleware/upload.middleware");
 
 // ============ USER SPECIFIC ROUTES (MUST BE BEFORE :id) ============
 // Get current user's posts
@@ -18,8 +19,8 @@ router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPostById);
 
 // ============ AUTHENTICATED ROUTES ============
-// Create new post
-router.post("/", protect, postController.createPost);
+// Create new post with media (photos and video)
+router.post("/", protect, postMediaMiddleware, postController.createPost);
 
 // Update post (only author)
 router.put("/:id", protect, postController.updatePost);
@@ -32,5 +33,8 @@ router.post("/:id/like", protect, postController.toggleLikePost);
 
 // Toggle save post (bookmark)
 router.post("/:id/save", protect, postController.toggleSavePost);
+
+// Add comment to post
+router.post("/:id/comments", protect, postController.addComment);
 
 module.exports = router;

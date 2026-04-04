@@ -14,6 +14,17 @@ const postSchema = new mongoose.Schema(
       trim: true,
       maxlength: 5000
     },
+    photos: [
+      {
+        type: String,
+        trim: true
+      }
+    ],
+    video: {
+      type: String,
+      default: null,
+      trim: true
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

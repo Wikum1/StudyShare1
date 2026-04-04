@@ -22,6 +22,10 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const [editedTitle, setEditedTitle] = useState(post.title);
   const [editedContent, setEditedContent] = useState(post.content);
   const [loading, setLoading] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState(post.comments || []);
+  const [commentText, setCommentText] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
 
   const API_BASE = "http://localhost:5000/api";
   
@@ -117,6 +121,31 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
     }
   };
 
+  // Handle add comment
+  const handleAddComment = async () => {
+    if (!commentText.trim()) {
+      alert("Comment cannot be empty");
+      return;
+    }
+
+    try {
+      setCommentLoading(true);
+      const response = await axios.post(
+        `${API_BASE}/posts/${postId}/comments`,
+        { content: commentText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setComments([...comments, response.data.comment]);
+      setCommentText("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      alert("Failed to add comment");
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
   return (
     <div className="post-card">
       <div className="post-header">
@@ -198,6 +227,32 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
           <h2 className="post-title">{post.title}</h2>
           <p className="post-body">{post.content}</p>
 
+          {/* Display Photos */}
+          {post.photos && post.photos.length > 0 && (
+            <div className="post-photos-gallery">
+              {post.photos.map((photo, idx) => (
+                <img 
+                  key={idx} 
+                  src={photo} 
+                  alt={`Post photo ${idx + 1}`}
+                  className="post-photo"
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Display Video */}
+          {post.video && (
+            <div className="post-video-container">
+              <video 
+                src={post.video} 
+                controls 
+                className="post-video"
+                controlsList="nodownload"
+              />
+            </div>
+          )}
+
           {post.tags && post.tags.length > 0 && (
             <div className="post-tags">
               {post.tags.map((tag, idx) => (
@@ -233,6 +288,12 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
           😊 React
         </button>
         <button
+          className="btn-action"
+          onClick={() => setShowComments(!showComments)}
+        >
+          💬 Comment
+        </button>
+        <button
           className={`btn-action ${isSaved ? "active" : ""}`}
           onClick={handleSave}
         >
@@ -261,6 +322,58 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
 
       {showReactions && (
         <ReactionPicker postId={postId} onReactionAdded={() => {}} />
+      )}
+
+      {showComments && (
+        <div className="comments-section">
+          <div className="comments-header">
+            <h4>Comments ({comments.length})</h4>
+          </div>
+
+          <div className="comments-list">
+            {comments.length > 0 ? (
+              comments.map((comment, idx) => (
+                <div key={idx} className="comment-item">
+                  <div className="comment-author">
+                    <div className="comment-avatar">
+                      {comment.author?.avatar ? (
+                        <img src={comment.author.avatar} alt={comment.author.name} />
+                      ) : (
+                        <div className="avatar-placeholder-small">
+                          {comment.author?.name?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="comment-info">
+                      <strong>{comment.author?.name || "Anonymous"}</strong>
+                      <span className="comment-date">{formatDate(comment.createdAt)}</span>
+                    </div>
+                  </div>
+                  <p className="comment-content">{comment.content}</p>
+                </div>
+              ))
+            ) : (
+              <p className="no-comments">No comments yet. Be the first to comment!</p>
+            )}
+          </div>
+
+          <div className="comment-input-area">
+            <textarea
+              className="comment-input"
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              rows="2"
+            />
+            <button
+              className="btn-comment-submit"
+              onClick={handleAddComment}
+              disabled={commentLoading}
+            >
+              {commentLoading ? "Posting..." : "Post Comment"}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
