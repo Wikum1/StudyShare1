@@ -38,6 +38,16 @@ const userSchema = new mongoose.Schema(
       default: "",
       maxlength: 500
     },
+    location: {
+      type: String,
+      default: "",
+      trim: true
+    },
+    interests: {
+      type: String,
+      default: "",
+      trim: true
+    },
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,

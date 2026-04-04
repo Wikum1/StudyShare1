@@ -10,6 +10,8 @@ exports.getNotifications = async (req, res) => {
     const notifications = await Notification.find({ recipient: userId })
       .populate("sender", "name avatar email")
       .populate("post", "title")
+      .populate("resource", "title")
+      .populate("task", "title")
       .populate("relatedComment", "content")
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -91,7 +93,7 @@ exports.deleteNotification = async (req, res) => {
 };
 
 // ============ CREATE NOTIFICATION (Internal) ============
-exports.createNotification = async (type, sender, recipient, post, message, relatedComment = null) => {
+exports.createNotification = async (type, sender, recipient, data = {}) => {
   try {
     // Don't notify if sender is the recipient (author)
     if (sender.toString() === recipient.toString()) {
@@ -102,9 +104,12 @@ exports.createNotification = async (type, sender, recipient, post, message, rela
       type,
       sender,
       recipient,
-      post,
-      relatedComment,
-      message
+      post: data.post || null,
+      resource: data.resource || null,
+      task: data.task || null,
+      relatedComment: data.relatedComment || null,
+      reactionType: data.reactionType || null,
+      message: data.message
     });
 
     await notification.save();

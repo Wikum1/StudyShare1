@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 import "./WallPage.css";
 import WallSidebar from "../components/WallSidebar";
 import CreatePost from "../components/CreatePost";
@@ -15,7 +16,9 @@ const WallPage = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [selectedTag, setSelectedTag] = useState("");
   const [refreshSidebar, setRefreshSidebar] = useState(0);
+  const [showSavedPosts, setShowSavedPosts] = useState(false);
 
+  const location = useLocation();
   const API_BASE = "http://localhost:5000/api";
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const token = userData?.token;
@@ -23,7 +26,23 @@ const WallPage = () => {
   // Fetch posts
   useEffect(() => {
     fetchPosts();
-  }, [page, sortBy, searchQuery, selectedTag]);
+  }, [page, sortBy, searchQuery, selectedTag, showSavedPosts]);
+
+  // Scroll to post when navigated from notification
+  useEffect(() => {
+    if (location.state?.scrollToPostId) {
+      setTimeout(() => {
+        const postElement = document.getElementById(`post-${location.state.scrollToPostId}`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          postElement.classList.add("highlight-post");
+          setTimeout(() => {
+            postElement.classList.remove("highlight-post");
+          }, 3000);
+        }
+      }, 300);
+    }
+  }, [location.state]);
 
   const fetchPosts = async () => {
     try {
@@ -36,11 +55,27 @@ const WallPage = () => {
         ...(selectedTag && { tag: selectedTag })
       };
 
-      const response = await axios.get(`${API_BASE}/posts`, { params });
-      setPosts(response.data.posts);
-      setTotalPages(response.data.pagination.totalPages);
+      let url = `${API_BASE}/posts`;
+      let response;
+      let headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      if (showSavedPosts) {
+        url = `${API_BASE}/posts/user/saved`;
+        response = await axios.get(url, { params, headers });
+      } else {
+        response = await axios.get(url, { params });
+      }
+
+      // Handle response safely
+      const postsData = response.data.posts || response.data.savedPosts || [];
+      const paginationData = response.data.pagination || { totalPages: 1 };
+      
+      setPosts(postsData);
+      setTotalPages(paginationData.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
+      setPosts([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -79,8 +114,8 @@ const WallPage = () => {
       {/* Main Feed */}
       <main className="wall-main">
         <div className="wall-header">
-          <h1>StudyShare Wall</h1>
-          <p>Share knowledge, ask questions, and connect with peers</p>
+          <h1>{showSavedPosts ? "📌 Saved Posts" : "StudyShare Wall"}</h1>
+          <p>{showSavedPosts ? "Your bookmarked posts" : "Share knowledge, ask questions, and connect with peers"}</p>
         </div>
 
         <div className="wall-controls">
@@ -108,12 +143,25 @@ const WallPage = () => {
             </select>
 
             {token && (
-              <button 
-                className="btn-create-post"
-                onClick={() => setShowCreatePost(true)}
-              >
-                + New Post
-              </button>
+              <>
+                <button 
+                  className={`btn-create-post ${showSavedPosts ? 'secondary' : ''}`}
+                  onClick={() => {
+                    setShowSavedPosts(!showSavedPosts);
+                    setPage(1);
+                  }}
+                  title={showSavedPosts ? "Show all posts" : "Show saved posts"}
+                >
+                  🔖 {showSavedPosts ? "All Posts" : "Saved"}
+                </button>
+
+                <button 
+                  className="btn-create-post"
+                  onClick={() => setShowCreatePost(true)}
+                >
+                  + New Post
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -135,12 +183,13 @@ const WallPage = () => {
           ) : (
             <>
               {posts.map(post => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  onPostDeleted={handlePostDeleted}
-                  onPostUpdated={handlePostUpdated}
-                />
+                <div key={post._id} id={`post-${post._id}`}>
+                  <PostCard
+                    post={post}
+                    onPostDeleted={handlePostDeleted}
+                    onPostUpdated={handlePostUpdated}
+                  />
+                </div>
               ))}
             </>
           )}

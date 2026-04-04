@@ -140,10 +140,12 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
   const getNotificationIcon = (type) => {
     const icons = {
       like: "👍",
-      love: "❤️",
+      reaction: "😊",
       comment: "💬",
       reply: "↩️",
-      follow: "👥"
+      follow: "👥",
+      resource: "📚",
+      task: "✅"
     };
     return icons[type] || "🔔";
   };
@@ -170,32 +172,6 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
 
   return (
     <aside className="wall-sidebar">
-      {/* Tab Navigation */}
-      <div className="sidebar-tabs">
-        <button
-          className={`tab-btn ${activeTab === "profile" ? "active" : ""}`}
-          onClick={() => setActiveTab("profile")}
-        >
-          👤 Profile
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "posts" ? "active" : ""}`}
-          onClick={() => setActiveTab("posts")}
-        >
-          📝 Posts
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "notifications" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("notifications");
-            fetchNotifications();
-          }}
-        >
-          🔔 Alerts
-        </button>
-      </div>
-
-      {/* Profile Tab */}
       {activeTab === "profile" && userData && (
         <div className="sidebar-content profile-tab">
           <div className="profile-card">
@@ -230,12 +206,6 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                     {userData.following?.length || 0}
                   </span>
                 </div>
-              </div>
-
-              <div className="profile-actions">
-                <button className="btn-edit-profile">
-                  ✎ Edit Profile
-                </button>
               </div>
             </div>
           </div>
@@ -368,15 +338,30 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                       <span className="notif-actor-name">{notif.sender?.name || "Someone"}</span>
                       <span className="notif-action-type">
                         {notif.type === "like" && "liked"}
+                        {notif.type === "reaction" && `reacted with ${notif.reactionType}`}
                         {notif.type === "comment" && "commented on"}
                         {notif.type === "reply" && "replied to"}
                         {notif.type === "follow" && "started following"}
+                        {notif.type === "resource" && "shared a resource"}
+                        {notif.type === "task" && "created a task"}
                       </span>
                     </div>
 
                     {notif.post && (
                       <div className="notif-post-title">
                         📌 {notif.post?.title || "your post"}
+                      </div>
+                    )}
+
+                    {notif.resource && (
+                      <div className="notif-resource-title">
+                        📚 {notif.resource?.title || "a resource"}
+                      </div>
+                    )}
+
+                    {notif.task && (
+                      <div className="notif-task-title">
+                        ✅ {notif.task?.title || "a task"}
                       </div>
                     )}
 
@@ -419,9 +404,12 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                     <p className="detail-user-name">{selectedNotification.sender?.name || "Someone"}</p>
                     <p className="detail-action">
                       {selectedNotification.type === "like" && "👍 Liked your post"}
+                      {selectedNotification.type === "reaction" && `😊 Reacted with ${selectedNotification.reactionType}`}
                       {selectedNotification.type === "comment" && "💬 Commented on your post"}
                       {selectedNotification.type === "reply" && "↩️ Replied to your post"}
                       {selectedNotification.type === "follow" && "👥 Started following you"}
+                      {selectedNotification.type === "resource" && "📚 Shared a new resource"}
+                      {selectedNotification.type === "task" && "✅ Created a new task"}
                     </p>
                   </div>
                 </div>
@@ -430,6 +418,20 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
                   <div className="notif-detail-post">
                     <h5>Post:</h5>
                     <p className="detail-post-title">{selectedNotification.post?.title}</p>
+                  </div>
+                )}
+
+                {selectedNotification.resource && (
+                  <div className="notif-detail-resource">
+                    <h5>Resource:</h5>
+                    <p className="detail-resource-title">{selectedNotification.resource?.title}</p>
+                  </div>
+                )}
+
+                {selectedNotification.task && (
+                  <div className="notif-detail-task">
+                    <h5>Task:</h5>
+                    <p className="detail-task-title">{selectedNotification.task?.title}</p>
                   </div>
                 )}
 

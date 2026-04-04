@@ -1,5 +1,6 @@
 const Reaction = require("../models/Reaction.model");
 const Post = require("../models/Post.model");
+const { createNotification } = require("./notification.controller");
 
 // ============ ADD REACTION ============
 exports.addReaction = async (req, res) => {
@@ -46,6 +47,18 @@ exports.addReaction = async (req, res) => {
     });
 
     const populatedReaction = await reaction.populate("user", "name avatar");
+
+    // Create notification for post author
+    await createNotification(
+      "reaction",
+      userId,
+      post.author,
+      {
+        post: postId,
+        reactionType: type,
+        message: `Someone reacted with ${type} to your post`
+      }
+    );
 
     res.status(201).json({
       message: "Reaction added successfully",

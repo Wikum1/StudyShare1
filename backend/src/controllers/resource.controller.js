@@ -1,9 +1,12 @@
 const Resource = require("../models/Resource.model");
+const User = require("../models/User.model");
+const { createNotification } = require("./notification.controller");
 
 /* ================= CREATE RESOURCE ================= */
 exports.createResource = async (req, res) => {
   try {
     const { title, description, subject } = req.body;
+    const uploaderId = req.user.id;
 
     if (!title || !description || !subject) {
       return res.status(400).json({
@@ -25,6 +28,7 @@ exports.createResource = async (req, res) => {
       description,
       subject,
       fileUrl: req.file.path.replace(/\\/g, "/"),
+      uploadedBy: uploaderId,
       status: "Pending"
     });
 
@@ -90,12 +94,28 @@ exports.approveResource = async (req, res) => {
       req.params.id,
       { status: "Approved" },
       { new: true }
-    );
+    ).populate("uploadedBy", "name");
 
     if (!resource) {
       return res.status(404).json({
         message: "Resource not found"
       });
+    }
+
+    // Get all users except the uploader
+    const allUsers = await User.find({ _id: { $ne: resource.uploadedBy._id } });
+
+    // Create notifications for all users
+    for (const user of allUsers) {
+      await createNotification(
+        "resource",
+        resource.uploadedBy._id,
+        user._id,
+        {
+          resource: resource._id,
+          message: `${resource.uploadedBy.name} shared a new resource: "${resource.title}"`
+        }
+      );
     }
 
     res.status(200).json({
