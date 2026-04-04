@@ -1,0 +1,164 @@
+/* ===== NAVBAR STYLING ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  gap: 8px;
+}
+
+.logo img {
+  width: 160px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.navbar {
+  background: transparent;
+  position: fixed;
+  top: 0;
+  padding: 40px 60px;   /* smaller padding */
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box;  /* 🔥 important */
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* ===== LOGO ===== */
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+.logo span {
+  color: #4CAF50;
+}
+
+/* ===== CENTER NAV LINKS ===== */
+.nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 35px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  position: relative;
+  transition: 0.3s ease;
+  font-size: 15px;
+}
+
+/* Hover underline animation */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  background: #4CAF50;
+  left: 0;
+  bottom: -5px;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* Active link */
+.nav-links a.active {
+  color: #4CAF50;
+}
+
+/* ===== RIGHT SIDE BUTTON ===== */
+.nav-right {
+  margin-left: auto;
+}
+
+.get-started-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.get-started-btn:hover {
+  background: #43a047;
+  transform: translateY(-2px);
+}
+
+/* ===== MOBILE MENU ICON ===== */
+.menu-icon {
+  display: none;
+  font-size: 22px;
+  color: white;
+  margin-left: 20px;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+
+  .nav-links {
+    position: absolute;
+    top: 80px;
+    right: 30px;
+    left: auto;
+    transform: none;
+    background: rgba(0,0,0,0.9);
+    flex-direction: column;
+    width: 230px;
+    padding: 25px;
+    border-radius: 12px;
+    display: none;
+    gap: 20px;
+  }
+
+.nav-links{
+  display:flex;
+  gap:25px;
+}
+
+@media(max-width:768px){
+
+.nav-links{
+  position:absolute;
+  top:70px;
+  left:0;
+  width:100%;
+  background:white;
+  flex-direction:column;
+  display:none;
+}
+
+.nav-links.active{
+  display:flex;
+}
+
+}
+
+  .menu-icon {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav-right {
+    display: none; /* hide button on mobile */
+  }
+}
+
+
