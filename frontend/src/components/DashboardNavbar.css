@@ -1,41 +1,69 @@
-/* ===== DASHBOARD NAVBAR ===== */
+/* ==============================
+   DASHBOARD NAVBAR - PREMIUM UI
+============================== */
 
 .dashboard-navbar {
-  height: 78px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  height: 82px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 48px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 0 42px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.05),
+    0 2px 8px rgba(15, 23, 42, 0.04);
   position: sticky;
   top: 0;
   z-index: 999;
 }
 
-/* LEFT */
+/* subtle top glow */
+.dashboard-navbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0),
+    rgba(16, 185, 129, 0.35),
+    rgba(59, 130, 246, 0.35),
+    rgba(16, 185, 129, 0)
+  );
+  pointer-events: none;
+}
+
+/* ==============================
+   LEFT
+============================== */
 
 .dashboard-left {
   display: flex;
   align-items: center;
-  gap: 50px;
+  gap: 42px;
+  min-width: 0;
 }
 
-/* LOGO */
+/* ==============================
+   LOGO
+============================== */
 
 .dashboard-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 20px;
-  color: #1e293b;
+  color: #0f172a;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.28s ease;
+  flex-shrink: 0;
 }
 
 .dashboard-logo a {
@@ -47,137 +75,232 @@
 }
 
 .dashboard-logo:hover {
-  opacity: 0.8;
+  transform: translateY(-1px);
+  opacity: 0.95;
 }
 
 .dashboard-logo img {
-  width: 48px;
+  width: 150px;
   height: 48px;
   object-fit: contain;
   display: block;
+  border-radius: 14px;
+  padding: 4px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%);
+  box-shadow:
+    0 8px 18px rgba(16, 185, 129, 0.12),
+    0 4px 10px rgba(59, 130, 246, 0.08);
 }
 
 .dashboard-logo span {
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   color: #0f172a;
-  font-weight: 700;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-/* NAV LINKS */
+/* ==============================
+   NAV LINKS
+============================== */
 
 .dashboard-links {
   display: flex;
   align-items: center;
   gap: 8px;
+  background: rgba(248, 250, 252, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 6px;
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .nav-link {
   text-decoration: none;
   color: #475569;
   font-size: 14px;
-  font-weight: 500;
-  padding: 8px 14px;
-  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 12px;
   position: relative;
   transition: all 0.25s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
-  color: #1e293b;
-  background: #f0f9ff;
+  color: #0f172a;
+  background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+  box-shadow: 0 6px 14px rgba(59, 130, 246, 0.08);
+  transform: translateY(-1px);
 }
 
 /* ACTIVE LINK */
 
 .nav-link.active {
-  background: linear-gradient(135deg, #5b7cff 0%, #3b82f6 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  color: #ffffff;
+  box-shadow:
+    0 10px 18px rgba(59, 130, 246, 0.22),
+    0 4px 10px rgba(16, 185, 129, 0.18);
 }
 
-/* STUDY PLANNER BUTTON STYLE */
+.nav-link.active:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ==============================
+   STUDY PLANNER SPECIAL LINK
+============================== */
 
 .study-planner-link {
-  background: transparent;
-  color: #475569;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(59, 130, 246, 0.05));
+  color: #334155;
   padding: 10px 18px;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.28s ease;
   text-decoration: none;
+  border: 1px solid rgba(203, 213, 225, 0.8);
 }
 
 .study-planner-link:hover {
   transform: translateY(-2px);
-  background: #f0f9ff;
-  color: #1e293b;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%);
+  color: #0f172a;
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.12);
 }
 
 .study-planner-link.active {
-  background: linear-gradient(135deg, #5b7cff 0%, #3b82f6 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow:
+    0 10px 18px rgba(59, 130, 246, 0.22),
+    0 4px 10px rgba(16, 185, 129, 0.18);
 }
 
-/* RIGHT SIDE */
+/* ==============================
+   RIGHT SIDE
+============================== */
 
 .dashboard-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* USER */
+/* ==============================
+   USER CHIP
+============================== */
 
 .dashboard-user {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
-  color: #1e293b;
-  font-weight: 500;
+  color: #0f172a;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 10px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
-/* LOGOUT BUTTON */
+.dashboard-user::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+  flex-shrink: 0;
+}
+
+/* ==============================
+   LOGOUT BUTTON
+============================== */
 
 .logout-btn {
-  background: #1a1a1a;
-  color: white;
+  background: linear-gradient(135deg, red 0%, red 100%);
+  color: #ffffff;
   border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 8px 16px rgba(15, 23, 42, 0.18),
+    0 3px 8px rgba(15, 23, 42, 0.12);
 }
 
 .logout-btn:hover {
   transform: translateY(-2px);
-  background: #0f0f0f;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+  box-shadow:
+    0 12px 22px rgba(15, 23, 42, 0.22),
+    0 4px 10px rgba(15, 23, 42, 0.16);
 }
 
 .logout-btn:active {
   transform: translateY(0);
 }
 
-/* MOBILE */
+/* ==============================
+   LARGE TABLET
+============================== */
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .dashboard-navbar {
-    padding: 0 32px;
+    padding: 0 28px;
   }
 
   .dashboard-left {
-    gap: 32px;
+    gap: 28px;
   }
 
   .dashboard-links {
-    gap: 4px;
+    gap: 6px;
+  }
+
+  .nav-link {
+    padding: 9px 13px;
+    font-size: 13px;
+  }
+
+  .study-planner-link {
+    padding: 9px 14px;
+  }
+}
+
+/* ==============================
+   TABLET
+============================== */
+
+@media (max-width: 992px) {
+  .dashboard-navbar {
+    height: 76px;
+    padding: 0 22px;
+  }
+
+  .dashboard-left {
+    gap: 20px;
+  }
+
+  .dashboard-logo img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dashboard-logo span {
+    font-size: 18px;
+  }
+
+  .dashboard-links {
+    padding: 5px;
   }
 
   .nav-link {
@@ -185,10 +308,15 @@
     font-size: 13px;
   }
 
-  .study-planner-link {
-    padding: 8px 14px;
+  .dashboard-user {
+    padding: 9px 12px;
+    font-size: 13px;
   }
 }
+
+/* ==============================
+   MOBILE
+============================== */
 
 @media (max-width: 768px) {
   .dashboard-navbar {
@@ -197,7 +325,7 @@
   }
 
   .dashboard-left {
-    gap: 24px;
+    gap: 16px;
   }
 
   .dashboard-links {
@@ -211,6 +339,7 @@
   .dashboard-logo img {
     width: 40px;
     height: 40px;
+    border-radius: 12px;
   }
 
   .dashboard-logo span {
@@ -218,23 +347,28 @@
   }
 
   .logout-btn {
-    padding: 8px 14px;
+    padding: 9px 14px;
     font-size: 12px;
+    border-radius: 10px;
   }
 }
 
+/* ==============================
+   SMALL MOBILE
+============================== */
+
 @media (max-width: 480px) {
+  .dashboard-navbar {
+    padding: 0 12px;
+    height: 66px;
+  }
+
   .dashboard-logo span {
     display: none;
   }
 
-  .dashboard-navbar {
-    padding: 0 12px;
-    height: 65px;
-  }
-
   .dashboard-right {
-    gap: 12px;
+    gap: 10px;
   }
 
   .logout-btn {
