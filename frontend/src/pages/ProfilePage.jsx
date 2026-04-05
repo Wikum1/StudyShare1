@@ -17,8 +17,8 @@ export default function ProfilePage() {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
       const userId = storedUser?.id;
 
       if (!token || !userId) {
@@ -48,8 +48,7 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append("avatar", file);
 
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
+      const token = localStorage.getItem("token");
 
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/users/upload-avatar`,

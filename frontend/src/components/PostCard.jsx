@@ -4,8 +4,8 @@ import "./PostCard.css";
 import ReactionPicker from "./ReactionPicker";
 
 const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
+  const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = userData?.token;
   const userId = userData?._id;
 
   // Simple approach: just use the ID as-is
@@ -17,7 +17,6 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
   const [isSaved, setIsSaved] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
-  const [reactions, setReactions] = useState(post.reactions || []);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(post.title);
   const [editedContent, setEditedContent] = useState(post.content);
@@ -234,7 +233,7 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
                 <img 
                   key={idx} 
                   src={photo} 
-                  alt={`Post photo ${idx + 1}`}
+                  alt={`${idx + 1}`}
                   className="post-photo"
                 />
               ))}

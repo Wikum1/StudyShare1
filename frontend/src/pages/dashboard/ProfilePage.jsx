@@ -21,13 +21,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
       const userId = storedUser?.id;
 
       if (!token || !userId) {
@@ -84,8 +84,7 @@ export default function ProfilePage() {
 
     try {
       setError("");
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
+      const token = localStorage.getItem("token");
 
       const formDataToSend = new FormData();
       formDataToSend.append("profilePicture", file);
@@ -119,8 +118,7 @@ export default function ProfilePage() {
     try {
       setError("");
       setSuccess("");
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = storedUser?.token;
+      const token = localStorage.getItem("token");
 
       const response = await axios.put(
         `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/users/profile/edit`,
@@ -137,6 +135,7 @@ export default function ProfilePage() {
 
       setUser(response.data.user);
       // Update local storage with new user data
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
       const updatedUser = { ...storedUser, name: response.data.user.name };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
@@ -149,17 +148,7 @@ export default function ProfilePage() {
     }
   };
 
-  const getJoinedDate = () => {
-    if (user?.createdAt) {
-      return new Date(user.createdAt).getFullYear();
-    }
-    return new Date().getFullYear();
-  };
 
-  const parseInterests = () => {
-    if (!formData.interests) return [];
-    return formData.interests.split(",").map(i => i.trim()).filter(i => i);
-  };
 
   if (loading) {
     return (

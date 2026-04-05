@@ -8,8 +8,8 @@ const ReactionPicker = ({ postId, commentId, onReactionAdded }) => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = userData?.token;
   const userId = userData?._id;
 
   const reactionTypes = [
@@ -24,6 +24,7 @@ const ReactionPicker = ({ postId, commentId, onReactionAdded }) => {
   // Fetch reactions
   useEffect(() => {
     fetchReactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, commentId]);
 
   const fetchReactions = async () => {

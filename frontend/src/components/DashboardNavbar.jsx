@@ -17,16 +17,16 @@ export default function DashboardNavbar() {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const userToken = storedUser?.token;
     if (storedUser?.name) {
       setUserName(storedUser.name);
     }
-    setToken(userToken);
+    setToken(token);
 
-    if (userToken) {
-      fetchUnreadNotifications(userToken);
-      const interval = setInterval(() => fetchUnreadNotifications(userToken), 30000);
+    if (token) {
+      fetchUnreadNotifications(token);
+      const interval = setInterval(() => fetchUnreadNotifications(token), 30000);
       return () => clearInterval(interval);
     }
   }, []);
