@@ -1,0 +1,545 @@
+/* ================================================
+   MODERN TASK LIST VIEW - PROFESSIONAL CLEAN UI
+   ================================================ */
+
+.modern-task-list-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modern-task-list-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================
+   HEADER
+   ================================================ */
+
+.modern-task-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  background: linear-gradient(135deg, #001f3f 0%, #003d66 100%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  flex-shrink: 0;
+}
+
+.task-list-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.task-list-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.task-list-download-btn {
+  padding: 8px 16px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.task-list-download-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.task-list-download-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.task-list-close-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-list-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: rotate(90deg);
+}
+
+/* ================================================
+   FILTERS
+   ================================================ */
+
+.modern-task-filters {
+  display: flex;
+  gap: 20px;
+  padding: 16px 28px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-options {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.filter-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.filter-checkbox:hover {
+  color: #1f2937;
+}
+
+/* ================================================
+   TASK LIST BODY
+   ================================================ */
+
+.modern-task-list-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modern-task-list-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modern-task-list-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modern-task-list-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modern-task-list-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.no-tasks-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.no-tasks-message p {
+  margin: 0;
+}
+
+/* ================================================
+   TASK GROUP
+   ================================================ */
+
+.task-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px;
+  border: 1px solid #dbeafe;
+}
+
+.task-group-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.task-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.task-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ================================================
+   TASK ITEM
+   ================================================ */
+
+.modern-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.modern-task-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.modern-task-item.completed {
+  background: #f8fafc;
+  opacity: 0.8;
+}
+
+.modern-task-item.completed .modern-task-title {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* ================================================
+   TASK CHECKBOX
+   ================================================ */
+
+.modern-task-checkbox {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.modern-task-checkbox:hover {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modern-task-item.completed .modern-task-checkbox {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.modern-task-item.completed .modern-task-checkbox:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ================================================
+   TASK CONTENT
+   ================================================ */
+
+.modern-task-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modern-task-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.modern-task-plan {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.modern-task-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modern-priority-badge,
+.modern-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: white;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* ================================================
+   ACTION BUTTON
+   ================================================ */
+
+.modern-task-action-btn {
+  padding: 6px 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+}
+
+.modern-task-action-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+}
+
+.modern-task-item.completed .modern-task-action-btn {
+  background: #94a3af;
+}
+
+.modern-task-item.completed .modern-task-action-btn:hover {
+  background: #6b7280;
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+   ================================================ */
+
+@media (max-width: 768px) {
+  .modern-task-list-container {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modern-task-list-header {
+    padding: 16px 20px;
+  }
+
+  .task-list-title h2 {
+    font-size: 16px;
+  }
+
+  .modern-task-filters {
+    padding: 12px 20px;
+    gap: 16px;
+  }
+
+  .modern-task-list-body {
+    padding: 16px 20px;
+    gap: 20px;
+  }
+
+  .modern-task-item {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .modern-task-content {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .modern-task-checkbox {
+    order: 0;
+  }
+
+  .modern-task-action-btn {
+    order: 2;
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .task-group-header {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .task-group-header h3 {
+    font-size: 12px;
+  }
+
+  .modern-task-title {
+    font-size: 13px;
+  }
+
+  .modern-priority-badge,
+  .modern-status-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-task-list-container {
+    width: 98%;
+    max-height: 95vh;
+    border-radius: 10px;
+  }
+
+  .modern-task-list-header {
+    padding: 14px 16px;
+  }
+
+  .task-list-title h2 {
+    font-size: 15px;
+  }
+
+  .task-list-close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .modern-task-filters {
+    padding: 10px 16px;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-options {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .modern-task-list-body {
+    padding: 12px 16px;
+    gap: 16px;
+  }
+
+  .modern-task-item {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .modern-task-checkbox {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .modern-task-action-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}

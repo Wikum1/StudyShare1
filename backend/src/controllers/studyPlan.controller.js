@@ -1,4 +1,8 @@
 const StudyPlan = require("../models/StudyPlan.model");
+const {
+  getProgressStats,
+  getOptimizationRecommendations,
+} = require("../services/progressTracker");
 
 // Plan title validation
 const validatePlanTitle = (title) => {
@@ -126,6 +130,9 @@ const updatePlan = async (req, res) => {
 
     if (req.body.subject !== undefined) plan.subject = req.body.subject;
     if (req.body.subjectCode !== undefined) plan.subjectCode = req.body.subjectCode;
+    if (req.body.dueDate !== undefined) {
+      plan.dueDate = req.body.dueDate ? new Date(req.body.dueDate) : null;
+    }
 
     await plan.save();
 
@@ -140,6 +147,153 @@ const updatePlan = async (req, res) => {
       return res.status(400).json({ message: err.message });
     }
 
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get Plan Progress & Statistics
+const getPlanProgress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      user: userId,
+    }).populate("tasks");
+
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+
+    const stats = await getProgressStats(plan);
+    const recommendations = getOptimizationRecommendations(stats);
+
+    res.json({
+      plan: {
+        _id: plan._id,
+        title: plan.title,
+        subject: plan.subject,
+        dueDate: plan.dueDate,
+      },
+      stats,
+      recommendations,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Add Milestone
+const addMilestone = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { title, description, targetDate } = req.body;
+
+    if (!title || !targetDate) {
+      return res.status(400).json({ message: "Title and target date are required" });
+    }
+
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      user: userId,
+    });
+
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+
+    plan.milestones.push({
+      title,
+      description: description || "",
+      targetDate: new Date(targetDate),
+      completed: false,
+      completedDate: null,
+    });
+
+    await plan.save();
+
+    res.status(201).json({
+      message: "Milestone added",
+      milestone: plan.milestones[plan.milestones.length - 1],
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update Milestone
+const updateMilestone = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { milestoneId } = req.params;
+    const { title, description, targetDate } = req.body;
+
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      user: userId,
+    });
+
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+
+    const milestone = plan.milestones.id(milestoneId);
+    if (!milestone) return res.status(404).json({ message: "Milestone not found" });
+
+    if (title !== undefined) milestone.title = title;
+    if (description !== undefined) milestone.description = description;
+    if (targetDate !== undefined) milestone.targetDate = new Date(targetDate);
+
+    await plan.save();
+
+    res.json({ message: "Milestone updated", milestone });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Complete Milestone
+const completeMilestone = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { milestoneId } = req.params;
+
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      user: userId,
+    });
+
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+
+    const milestone = plan.milestones.id(milestoneId);
+    if (!milestone) return res.status(404).json({ message: "Milestone not found" });
+
+    milestone.completed = true;
+    milestone.completedDate = new Date();
+
+    await plan.save();
+
+    res.json({ message: "Milestone marked as complete", milestone });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Delete Milestone
+const deleteMilestone = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { milestoneId } = req.params;
+
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      user: userId,
+    });
+
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+
+    const milestone = plan.milestones.id(milestoneId);
+    if (!milestone) return res.status(404).json({ message: "Milestone not found" });
+
+    plan.milestones.pull(milestoneId);
+    await plan.save();
+
+    res.json({ message: "Milestone deleted" });
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
@@ -162,4 +316,15 @@ const deletePlan = async (req, res) => {
   }
 };
 
-module.exports = { createPlan, getPlans, getPlan, updatePlan, deletePlan };
+module.exports = {
+  createPlan,
+  getPlans,
+  getPlan,
+  updatePlan,
+  getPlanProgress,
+  addMilestone,
+  updateMilestone,
+  completeMilestone,
+  deleteMilestone,
+  deletePlan,
+};

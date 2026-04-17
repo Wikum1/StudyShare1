@@ -8,6 +8,11 @@ const {
   getPlans,
   getPlan,
   updatePlan,
+  getPlanProgress,
+  addMilestone,
+  updateMilestone,
+  completeMilestone,
+  deleteMilestone,
   deletePlan,
 } = require("../controllers/studyPlan.controller");
 
@@ -21,6 +26,15 @@ router.post("/", createPlan);
 
 // 📥 Get All Plans
 router.get("/", getPlans);
+
+// 📊 Get Plan Progress & Statistics
+router.get("/:id/progress", getPlanProgress);
+
+// 🎯 Milestone Routes
+router.post("/:id/milestones", addMilestone);
+router.put("/:id/milestones/:milestoneId", updateMilestone);
+router.patch("/:id/milestones/:milestoneId/complete", completeMilestone);
+router.delete("/:id/milestones/:milestoneId", deleteMilestone);
 
 // 🔗 Nested Task Routes
 router.use("/:planId/tasks", taskRoutes);
