@@ -5,7 +5,6 @@ import "./CreatePost.css";
 const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
   const photoInputRef = useRef(null);
   const videoInputRef = useRef(null);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [photos, setPhotos] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -97,8 +96,8 @@ const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
     e.preventDefault();
     setError("");
 
-    if (!title.trim() || !content.trim()) {
-      setError("Title and content are required");
+    if (!content.trim()) {
+      setError("Description is required");
       return;
     }
 
@@ -107,7 +106,6 @@ const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
 
       // Create FormData for file uploads
       const formData = new FormData();
-      formData.append("title", title.trim());
       formData.append("content", content.trim());
 
       // Add photos
@@ -132,7 +130,6 @@ const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
       );
 
       onPostCreated(response.data.post);
-      setTitle("");
       setContent("");
       setPhotos([]);
       setPhotoPreviews([]);
@@ -156,21 +153,7 @@ const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
 
         <form onSubmit={handleSubmit} className="create-post-form">
           <div className="form-group">
-            <label htmlFor="title">Title</label>
-            <input
-              id="title"
-              type="text"
-              placeholder="What's on your mind?"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength="200"
-              className="form-input"
-            />
-            <span className="char-count">{title.length}/200</span>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="content">Content</label>
+            <label htmlFor="content">Description</label>
             <textarea
               id="content"
               placeholder="Share your thoughts, ask questions, or provide helpful information..."

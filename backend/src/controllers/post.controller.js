@@ -9,15 +9,14 @@ const { ObjectId } = require("mongoose").Types;
 // ============ CREATE POST ============
 exports.createPost = async (req, res) => {
   try {
-    const { title, content, tags } = req.body;
+    const { content, tags } = req.body;
     const userId = req.user.id;
 
     console.log("📝 Creating post...");
     console.log("User ID from token:", userId);
-    console.log("Title:", title);
 
-    if (!title || !content) {
-      return res.status(400).json({ message: "Title and content are required" });
+    if (!content || !String(content).trim()) {
+      return res.status(400).json({ message: "Description is required" });
     }
 
     // Process uploaded files
@@ -70,8 +69,8 @@ exports.createPost = async (req, res) => {
     }
 
     const newPost = new Post({
-      title,
-      content,
+      title: "",
+      content: String(content).trim(),
       author: userId,
       tags: tags || [],
       photos,
@@ -200,7 +199,7 @@ exports.updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user.id;
-    const { title, content, tags } = req.body;
+    const { content, tags } = req.body;
 
     const post = await Post.findById(postId);
 
@@ -214,8 +213,13 @@ exports.updatePost = async (req, res) => {
         .json({ message: "You can only edit your own posts" });
     }
 
-    if (title) post.title = title;
-    if (content) post.content = content;
+    if (content !== undefined) {
+      const trimmed = String(content).trim();
+      if (!trimmed) {
+        return res.status(400).json({ message: "Description cannot be empty" });
+      }
+      post.content = trimmed;
+    }
     if (tags) post.tags = tags;
 
     post.isEdited = true;

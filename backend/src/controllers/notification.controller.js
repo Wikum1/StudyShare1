@@ -9,7 +9,7 @@ exports.getNotifications = async (req, res) => {
 
     const notifications = await Notification.find({ recipient: userId })
       .populate("sender", "name avatar email avatarColor")
-      .populate("post", "title")
+      .populate("post", "title content")
       .populate("resource", "title")
       .populate("task", "title")
       .populate("relatedComment", "content")
