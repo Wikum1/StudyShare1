@@ -480,8 +480,10 @@ exports.getUserPosts = async (req, res) => {
   try {
     const userId = req.params.userId || req.user.id;
     console.log("🔍 getUserPosts called");
-    console.log("Received userId:", userId);
-    console.log("Req.user:", req.user);
+    console.log("req.params:", req.params);
+    console.log("userId from params:", req.params.userId);
+    console.log("req.user.id:", req.user.id);
+    console.log("Final userId being used:", userId);
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;

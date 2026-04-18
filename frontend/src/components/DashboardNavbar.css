@@ -16,7 +16,6 @@
     0 10px 30px rgba(15, 23, 42, 0.05),
     0 2px 8px rgba(15, 23, 42, 0.04);
   height: 70px;
-  background: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,6 +24,7 @@
   position: sticky;
   top: 0;
   z-index: 999;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* subtle top glow */
@@ -109,14 +109,11 @@
 }
 
 .dashboard-logo span {
-  letter-spacing: 0.2px;
-  color: #0f172a;
-  font-weight: 800;
-  white-space: nowrap;
   letter-spacing: 0.5px;
   color: #0f172a;
   font-weight: 800;
   font-size: 18px;
+  white-space: nowrap;
 }
 
 /* ==============================
@@ -127,8 +124,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(248, 250, 252, 0.85);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   padding: 6px;
   border-radius: 16px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -156,7 +153,7 @@
   background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
   box-shadow: 0 6px 14px rgba(59, 130, 246, 0.08);
   transform: translateY(-1px);
-  color: #334155;
+  color: #9ca3af;
   background: #f8fafc;
 }
 
@@ -229,7 +226,7 @@
   color: #0f172a;
   font-weight: 600;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid #e2e8f0;
   padding: 10px 14px;
   border-radius: 999px;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
@@ -271,13 +268,8 @@
 ============================== */
 
 .logout-btn {
-  background: linear-gradient(135deg, red 0%, red 100%);
+  background: #1f2937;
   color: #ffffff;
-  border: none;
-  padding: 11px 18px;
-  border-radius: 12px;
-  background: #1e293b;
-  color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -285,20 +277,13 @@
   font-size: 13px;
   font-weight: 700;
   transition: all 0.25s ease;
-  box-shadow:
-    0 8px 16px rgba(15, 23, 42, 0.18),
-    0 3px 8px rgba(15, 23, 42, 0.12);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
 }
 
 .logout-btn:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
-  box-shadow:
-    0 12px 22px rgba(15, 23, 42, 0.22),
-    0 4px 10px rgba(15, 23, 42, 0.16);
-  background: #0f172a;
+  background: #111827;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
@@ -340,7 +325,7 @@
   top: -6px;
   right: -6px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #ffffff;
   border-radius: 50%;
   width: 22px;
   height: 22px;
@@ -349,7 +334,7 @@
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  border: 2px solid white;
+  border: 2px solid #ffffff;
 }
 
 /* Notification Dropdown */
@@ -358,14 +343,14 @@
   top: calc(100% + 12px);
   right: 0;
   width: 360px;
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
   z-index: 1001;
   display: flex;
   flex-direction: column;
   max-height: 500px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #e2e8f0;
 }
 
 .notification-dropdown-header {
@@ -373,7 +358,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .notification-dropdown-header h3 {
@@ -400,7 +385,7 @@
 }
 
 .dropdown-close-btn:hover {
-  color: #475569;
+  color: #9ca3af;
   background: #f8fafc;
 }
 
@@ -419,7 +404,7 @@
 }
 
 .notification-dropdown-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #e2e8f0;
   border-radius: 3px;
 }
 
@@ -427,18 +412,18 @@
   display: flex;
   gap: 12px;
   padding: 14px 16px;
-  border-bottom: 1px solid #f7f7f7;
+  border-bottom: 1px solid #e2e8f0;
   cursor: pointer;
   transition: background 0.2s ease;
   position: relative;
 }
 
 .notification-item:hover {
-  background: #f9fafb;
+  background: #f8fafc;
 }
 
 .notification-item.unread {
-  background: #f0f4ff;
+  background: #f0fdf4;
 }
 
 .notif-icon {
@@ -475,7 +460,7 @@
 
 .notif-reference {
   font-size: 12px;
-  color: #334155;
+  color: #9ca3af;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -509,14 +494,14 @@
 
 .notification-dropdown-footer {
   padding: 14px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #e2e8f0;
 }
 
 .view-all-btn {
   width: 100%;
   padding: 11px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-weight: 600;

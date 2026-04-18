@@ -70,23 +70,30 @@ exports.updateUserProfile = async (req, res) => {
 exports.uploadProfilePicture = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("📸 Profile picture upload attempt");
+    console.log("User ID:", userId);
+    console.log("File received:", req.file?.filename);
 
     if (!req.file) {
+      console.log("❌ No file provided");
       return res.status(400).json({ message: "No file provided" });
     }
 
     const user = await User.findById(userId);
 
     if (!user) {
+      console.log("❌ User not found:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
     // Generate the file URL (adjust based on your server setup)
     const fileUrl = `/uploads/profiles/${req.file.filename}`;
+    console.log("✅ File URL:", fileUrl);
 
     // Update user avatar
     user.avatar = fileUrl;
     await user.save();
+    console.log("✅ Profile picture updated successfully");
 
     res.status(200).json({
       message: "Profile picture uploaded successfully",
@@ -94,8 +101,8 @@ exports.uploadProfilePicture = async (req, res) => {
       user
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to upload profile picture" });
+    console.error("❌ Error uploading profile picture:", err.message);
+    res.status(500).json({ message: "Failed to upload profile picture", error: err.message });
   }
 };
 

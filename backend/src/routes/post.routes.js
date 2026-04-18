@@ -11,6 +11,9 @@ router.get("/user/my-posts", protect, postController.getUserPosts);
 // Get saved posts
 router.get("/user/saved", protect, postController.getUserSavedPosts);
 
+// Get posts for a specific user (by userId)
+router.get("/user/:userId", protect, postController.getUserPosts);
+
 // ============ PUBLIC ROUTES ============
 // Get all posts (with pagination, search, sorting, filtering)
 router.get("/", postController.getAllPosts);

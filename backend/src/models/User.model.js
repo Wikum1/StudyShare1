@@ -50,9 +50,8 @@ const userSchema = new mongoose.Schema(
       trim: true
     },
     interests: {
-      type: String,
-      default: "",
-      trim: true
+      type: [String],
+      default: [],
     },
     followers: [
       {

@@ -157,19 +157,25 @@ const profileUpload = multer({
 
 /* ================= ERROR HANDLER - PROFILE PICTURE UPLOAD ================= */
 const profilePictureMiddleware = (req, res, next) => {
+  console.log("📤 Profile picture middleware - processing upload");
+  console.log("Content-Type:", req.headers["content-type"]);
+  
   const singleUpload = profileUpload.single("profilePicture");
 
   singleUpload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
+      console.error("❌ Multer error:", err.message);
       return res.status(400).json({
         message: "Profile picture upload error: " + err.message
       });
     } else if (err) {
+      console.error("❌ Upload error:", err.message);
       return res.status(400).json({
         message: err.message
       });
     }
 
+    console.log("✅ File uploaded:", req.file?.filename);
     next();
   });
 };

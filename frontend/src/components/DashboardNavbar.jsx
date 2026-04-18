@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { useContext, useState, useEffect, useRef } from "react";
-import { ThemeContext } from "../context/ThemeContext";
+import { useState, useEffect, useRef } from "react";
 import "./DashboardNavbar.css";
 import logo from "../assets/logo.png";
 import axios from "axios";
@@ -9,7 +8,6 @@ import { postPreviewText } from "../utils/postPreview";
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
-  const { darkMode, setDarkMode } = useContext(ThemeContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [token, setToken] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
