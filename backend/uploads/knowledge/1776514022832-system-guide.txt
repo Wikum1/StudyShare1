@@ -1,0 +1,25 @@
+StudyShare System Guide
+
+Dashboard:
+The dashboard is the main area where students can access all features. From the dashboard, students can upload resources, manage study plans, view notifications, and access their profile.
+
+Upload Resource:
+To upload a resource, go to the dashboard and click on the Upload Resource page. Fill in the required details such as title, description, and category. Then choose a file and submit it. After uploading, the resource will be available for other students.
+
+My Resources:
+Students can view all uploaded resources in the My Resources page. They can manage, view, and download their files from this section.
+
+Study Planner:
+Students can create study plans using the Study Planner page. They can add tasks, set deadlines, and organize their academic work efficiently.
+
+Profile:
+Students can view and update their personal details in the Profile section.
+
+Forum / Wall:
+Students can post questions or discussions on the Wall page. Other students can interact by commenting and reacting.
+
+Notifications:
+Students receive notifications when someone interacts with their posts or activities.
+
+Search:
+Students can search resources using keywords in the search bar. Special characters are not allowed in search input.

@@ -1,0 +1,212 @@
+MODULE: Programming Applications and Frameworks (IT3030)
+
+--------------------------------------------------
+SECTION 1: INTRODUCTION TO SOFTWARE FRAMEWORKS
+--------------------------------------------------
+
+What is Programming?
+Programming is writing code to create an application.
+
+What is Software Engineering?
+Software engineering is the full process of designing, developing, testing, deploying, and maintaining software using engineering principles.
+
+Difference:
+- Programming = coding only
+- Software Engineering = complete lifecycle
+
+Software Engineering Activities:
+- Requirement analysis
+- System design
+- Coding
+- Testing (QA)
+- Deployment
+- Maintenance
+
+--------------------------------------------------
+SECTION 2: SOFTWARE FRAMEWORKS
+--------------------------------------------------
+
+What is a Framework?
+A framework is a reusable structure that provides common functionalities to build applications efficiently.
+
+Purpose:
+- Avoid rewriting common features
+- Provide best practices
+- Speed up development
+
+Examples:
+- Spring Boot (Java)
+- Express.js (Node.js)
+- Angular (Frontend)
+- Vue.js
+
+Framework vs Library:
+- Library → You call it
+- Framework → It controls your code (Inversion of Control)
+
+Advantages:
+- Faster development
+- Code reuse
+- Built-in security
+- Community support
+
+Limitations:
+- Learning curve
+- Limited flexibility
+- Must follow framework rules
+
+--------------------------------------------------
+SECTION 3: VERSION CONTROL (GIT)
+--------------------------------------------------
+
+What is Version Control?
+A system that tracks changes in files over time.
+
+Why needed?
+- Track history
+- Restore old versions
+- Collaboration
+
+Types:
+- Local VCS
+- Centralized VCS
+- Distributed VCS (Git)
+
+What is Git?
+Git is a distributed version control system created by Linus Torvalds.
+
+Key Concepts:
+- Repository (Local + Remote)
+- Commit = snapshot of changes
+- Branch = separate development line
+
+Basic Git Workflow:
+1. Add changes
+2. Commit
+3. Pull updates
+4. Push changes
+
+Best Practices:
+- Commit often
+- Use branches
+- Write clear commit messages
+
+--------------------------------------------------
+SECTION 4: WEB APPLICATION ARCHITECTURE
+--------------------------------------------------
+
+Website vs Web Application:
+- Website → Static content
+- Web App → Interactive system
+
+Three-Tier Architecture:
+1. Presentation Layer (Frontend)
+2. Application Layer (Backend)
+3. Database Layer
+
+Benefits:
+- Scalability
+- Security
+- Independent development
+
+--------------------------------------------------
+SECTION 5: FRONTEND DEVELOPMENT
+--------------------------------------------------
+
+Frontend:
+User interface of the application.
+
+Technologies:
+- HTML → Structure
+- CSS → Styling
+- JavaScript → Behavior
+
+DOM:
+Object representation of web page structure.
+
+State:
+Current data of the application.
+
+State Management:
+- Local state
+- Global state
+- Redux (central store)
+
+--------------------------------------------------
+SECTION 6: APIs AND REST
+--------------------------------------------------
+
+What is an API?
+A system that allows communication between applications.
+
+What is REST?
+An architectural style for building web APIs.
+
+REST Principles:
+- Client-Server
+- Stateless
+- Cacheable
+- Uniform Interface
+- Layered System
+
+HTTP Methods:
+- GET → Read
+- POST → Create
+- PUT → Update
+- DELETE → Remove
+
+--------------------------------------------------
+SECTION 7: AUTHENTICATION & AUTHORIZATION
+--------------------------------------------------
+
+Authentication:
+Verifying identity (who you are)
+
+Authorization:
+Access control (what you can do)
+
+Methods:
+- Basic Auth
+- API Keys
+- JWT (most common)
+- OAuth 2.0
+
+--------------------------------------------------
+SECTION 8: DEVOPS & CI/CD
+--------------------------------------------------
+
+What is DevOps?
+Collaboration between developers and operations.
+
+CI (Continuous Integration):
+- Frequent code integration
+- Automated testing
+
+CD (Continuous Delivery/Deployment):
+- Automated deployment
+
+Benefits:
+- Faster releases
+- Better quality
+- Less bugs
+
+--------------------------------------------------
+SECTION 9: SOFTWARE INDUSTRY INSIGHTS
+--------------------------------------------------
+
+Tech Stack:
+Combination of technologies used in a project.
+
+Examples:
+- Frontend → React
+- Backend → Node.js
+- Database → MongoDB
+
+Key Concepts:
+- Choose right tools
+- Avoid over-engineering
+- Keep solutions simple (KISS principle)
+
+--------------------------------------------------
+END OF DOCUMENT
+--------------------------------------------------

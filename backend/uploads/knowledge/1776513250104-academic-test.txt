@@ -1,0 +1,7 @@
+SE3040 Assignment 1
+
+The submission deadline is 25 April 2026.
+Students must submit a PDF report and source code.
+Late submissions will receive penalties.
+
+StudyShare allows students to upload resources, create study plans, and manage academic tasks.

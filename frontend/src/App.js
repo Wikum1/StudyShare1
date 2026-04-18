@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom
 /* Public Components */
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ChatbotWidget from "./components/chatbot/ChatbotWidget";
 
 /* Dashboard Components */
 import DashboardNavbar from "./components/DashboardNavbar";
@@ -69,21 +70,32 @@ function DashboardLayout() {
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* ================= PUBLIC WEBSITE ================= */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/resources" element={<ResourcesPage />} />
-          <Route path="/planner" element={<StudyPlannerPage />} />
-          <Route path="/forum" element={<ForumPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Route>
+      <>
+        <Routes>
+          {/* ================= PUBLIC WEBSITE ================= */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/planner" element={<StudyPlannerPage />} />
+            <Route path="/forum" element={<ForumPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+          </Route>
 
-        {/* ================= AUTH PAGES ================= */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+          {/* ================= AUTH PAGES ================= */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
+          {/* ================= STUDENT DASHBOARD ================= */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile-details" element={<ProfileDetailsPage />} />
+            <Route path="upload" element={<UploadResource />} />
+            <Route path="my-resources" element={<MyResources />} />
+            <Route path="study-planner" element={<StudyCalendar />} />
+            <Route path="wall" element={<WallPage />} />
+          </Route>
         {/* ================= STUDENT DASHBOARD ================= */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
@@ -96,16 +108,20 @@ function App() {
           <Route path="wall/my-posts" element={<MyWallPostsPage />} />
         </Route>
 
-        {/* ================= ADMIN DASHBOARD ================= */}
-        <Route path="/admin-dashboard" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="students" element={<AdminStudents />} />
-          <Route path="resources" element={<AdminResources />} />
-          <Route path="activities" element={<AdminActivities />} />
-          <Route path="posts" element={<AdminPosts />} />
-          <Route path="profile" element={<AdminProfile />} />
-        </Route>
-      </Routes>
+          {/* ================= ADMIN DASHBOARD ================= */}
+          <Route path="/admin-dashboard" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="resources" element={<AdminResources />} />
+            <Route path="activities" element={<AdminActivities />} />
+            <Route path="posts" element={<AdminPosts />} />
+            <Route path="profile" element={<AdminProfile />} />
+          </Route>
+        </Routes>
+
+        {/* ================= FLOATING BUTTON ON ALL PAGES ================= */}
+      <ChatbotWidget />
+      </>
     </Router>
   );
 }

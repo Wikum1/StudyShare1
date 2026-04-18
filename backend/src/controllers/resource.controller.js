@@ -6,6 +6,13 @@ const { createNotification } = require("./notification.controller");
 exports.createResource = async (req, res) => {
   try {
     const { title, description, subject } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({
+        message: "User not authenticated"
+      });
+    }
+
     const uploaderId = req.user.id;
 
     if (!title || !description || !subject) {
@@ -22,6 +29,7 @@ exports.createResource = async (req, res) => {
 
     console.log("Uploaded File:", req.file);
     console.log("Body:", req.body);
+    console.log("Authenticated User:", req.user);
 
     const resource = await Resource.create({
       title,
@@ -45,7 +53,6 @@ exports.createResource = async (req, res) => {
 };
 
 /* ================= STUDENT VIEW ================= */
-/* only approved resources should be visible to students */
 exports.getMyResources = async (req, res) => {
   try {
     const resources = await Resource.find({ status: "Approved" }).sort({ createdAt: -1 });
@@ -102,20 +109,20 @@ exports.approveResource = async (req, res) => {
       });
     }
 
-    // Get all users except the uploader
-    const allUsers = await User.find({ _id: { $ne: resource.uploadedBy._id } });
+    if (resource.uploadedBy && resource.uploadedBy._id) {
+      const allUsers = await User.find({ _id: { $ne: resource.uploadedBy._id } });
 
-    // Create notifications for all users
-    for (const user of allUsers) {
-      await createNotification(
-        "resource",
-        resource.uploadedBy._id,
-        user._id,
-        {
-          resource: resource._id,
-          message: `${resource.uploadedBy.name} shared a new resource: "${resource.title}"`
-        }
-      );
+      for (const user of allUsers) {
+        await createNotification(
+          "resource",
+          resource.uploadedBy._id,
+          user._id,
+          {
+            resource: resource._id,
+            message: `${resource.uploadedBy.name} shared a new resource: "${resource.title}"`
+          }
+        );
+      }
     }
 
     res.status(200).json({
