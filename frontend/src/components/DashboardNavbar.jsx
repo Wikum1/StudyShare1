@@ -5,6 +5,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import "./DashboardNavbar.css";
 import logo from "../assets/logo.png";
 import axios from "axios";
+import { postPreviewText } from "../utils/postPreview";
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
@@ -242,7 +243,9 @@ export default function DashboardNavbar() {
                           </span>
                         </div>
                         {notif.post && (
-                          <div className="notif-reference">📌 {notif.post?.title}</div>
+                          <div className="notif-reference">
+                            📌 {postPreviewText(notif.post) || "Post"}
+                          </div>
                         )}
                         {notif.resource && (
                           <div className="notif-reference">📚 {notif.resource?.title}</div>

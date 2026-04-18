@@ -28,13 +28,16 @@ exports.getUserProfile = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, bio, avatar, location, interests, phoneNumber } = req.body;
+    const { name, bio, avatar, location, interests, phoneNumber, avatarColor } = req.body;
 
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    const hexOk = (v) =>
+      typeof v === "string" && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(v.trim());
 
     // Update fields
     if (name) user.name = name;
@@ -43,6 +46,13 @@ exports.updateUserProfile = async (req, res) => {
     if (location !== undefined) user.location = location;
     if (interests !== undefined) user.interests = interests;
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+    if (avatarColor !== undefined) {
+      if (avatarColor === null || avatarColor === "") {
+        user.avatarColor = null;
+      } else if (hexOk(avatarColor)) {
+        user.avatarColor = avatarColor.trim();
+      }
+    }
 
     await user.save();
 
