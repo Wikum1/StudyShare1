@@ -16,7 +16,6 @@ const WallPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [createPostPicker, setCreatePostPicker] = useState(null);
-  const [showSavedPosts, setShowSavedPosts] = useState(false);
   const [refreshSidebar, setRefreshSidebar] = useState(0);
 
   const location = useLocation();
