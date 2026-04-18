@@ -29,6 +29,7 @@ import UploadResource from "./pages/UploadResource";
 import MyResources from "./pages/MyResources";
 import StudyCalendar from "./pages/StudyCalendar";
 import WallPage from "./pages/WallPage";
+import MyWallPostsPage from "./pages/MyWallPostsPage";
 
 /* Admin Pages */
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -95,6 +96,17 @@ function App() {
             <Route path="study-planner" element={<StudyCalendar />} />
             <Route path="wall" element={<WallPage />} />
           </Route>
+        {/* ================= STUDENT DASHBOARD ================= */}
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardHome />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile-details" element={<ProfileDetailsPage />} />
+          <Route path="upload" element={<UploadResource />} />
+          <Route path="my-resources" element={<MyResources />} />
+          <Route path="study-planner" element={<StudyCalendar />} />
+          <Route path="wall" element={<WallPage />} />
+          <Route path="wall/my-posts" element={<MyWallPostsPage />} />
+        </Route>
 
           {/* ================= ADMIN DASHBOARD ================= */}
           <Route path="/admin-dashboard" element={<AdminLayout />}>

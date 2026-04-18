@@ -77,7 +77,9 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        role: user.role
+        role: user.role,
+        avatar: user.avatar,
+        avatarColor: user.avatarColor
       }
     });
   } catch (err) {
@@ -139,7 +141,9 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        role: user.role
+        role: user.role,
+        avatar: user.avatar,
+        avatarColor: user.avatarColor
       }
     });
   } catch (err) {

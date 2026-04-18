@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { postPreviewText } from "../../utils/postPreview";
 import "./AdminPosts.css";
 
 export default function AdminPosts() {
@@ -145,7 +146,7 @@ export default function AdminPosts() {
             <div key={post._id} className="admin-post-card">
               <div className="admin-post-top">
                 <div className="admin-post-title-wrap">
-                  <h3>{post.title || "Untitled Post"}</h3>
+                  <h3>{postPreviewText(post, 100) || "Post"}</h3>
                   <span className="post-date">
                     {formatDate(post.createdAt || post.updatedAt)}
                   </span>
