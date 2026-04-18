@@ -21,7 +21,11 @@ const WallPage = () => {
 
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const showSavedPosts = searchParams.get("saved") === "1";
+  const isSavedPostsView = searchParams.get("saved") === "1";
+
+  useEffect(() => {
+    setShowSavedPosts(isSavedPostsView);
+  }, [isSavedPostsView]);
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
   const [userData, setUserData] = useState(() =>
