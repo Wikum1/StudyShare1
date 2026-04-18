@@ -8,7 +8,7 @@ exports.getNotifications = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     const notifications = await Notification.find({ recipient: userId })
-      .populate("sender", "name avatar email")
+      .populate("sender", "name avatar email avatarColor")
       .populate("post", "title")
       .populate("resource", "title")
       .populate("task", "title")

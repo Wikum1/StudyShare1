@@ -76,9 +76,74 @@
   font-style: italic;
 }
 
-.post-actions {
+.post-card-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.post-card-menu-trigger {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.post-card-menu-trigger:hover,
+.post-card-menu-trigger[aria-expanded="true"] {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.post-card-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 148px;
+  padding: 6px 0;
+  margin: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+  z-index: 20;
+}
+
+.post-card-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  color: #334155;
+  transition: background 0.15s ease;
+}
+
+.post-card-menu-item:hover {
+  background: #f8fafc;
+}
+
+.post-card-menu-item--danger {
+  color: #b91c1c;
+}
+
+.post-card-menu-item--danger:hover {
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .btn-action {

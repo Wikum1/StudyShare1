@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    /** Hex color for letter avatar (e.g. #6366f1) — optional */
+    avatarColor: {
+      type: String,
+      default: null,
+      maxlength: 7
+    },
     bio: {
       type: String,
       default: "",

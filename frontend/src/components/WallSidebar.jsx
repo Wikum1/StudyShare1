@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import {
+  avatarPlaceholderStyle,
+  normalizeHex,
+} from "../utils/avatarPlaceholderStyle";
 import "./WallSidebar.css";
+
+const AVATAR_COLOR_PRESETS = [
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f97316",
+  "#22c55e",
+  "#0ea5e9",
+  "#64748b",
+];
 
 const displayStudentId = (user) => {
   if (!user?.email) return "";
@@ -18,6 +32,12 @@ const WallSidebar = ({
   const [notifications, setNotifications] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [feedNameDraft, setFeedNameDraft] = useState("");
+  const [postCount, setPostCount] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [saveNameLoading, setSaveNameLoading] = useState(false);
+  const [avatarColorDraft, setAvatarColorDraft] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,15 +50,10 @@ const WallSidebar = ({
 
   const pathname = location.pathname;
   const isMyPostsRoute = pathname.includes("/wall/my-posts");
-  const tab = searchParams.get("tab");
   const saved = searchParams.get("saved");
 
   const feedActive =
-    pathname.includes("/wall") &&
-    !isMyPostsRoute &&
-    tab !== "notifications" &&
-    saved !== "1";
-  const notificationsActive = tab === "notifications" && !isMyPostsRoute;
+    pathname.includes("/wall") && !isMyPostsRoute && saved !== "1";
   const savedActive = saved === "1" && !isMyPostsRoute;
   const myPostsActive = isMyPostsRoute;
 
@@ -50,6 +65,15 @@ const WallSidebar = ({
       setIsAuthenticated(false);
     }
   }, [token, userId]);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [profileOpen]);
 
   const fetchNotifications = async () => {
     try {
@@ -95,9 +119,69 @@ const WallSidebar = ({
   };
 
   const goFeed = () => navigate("/dashboard/wall");
-  const goNotifications = () => navigate("/dashboard/wall?tab=notifications");
   const goSaved = () => navigate("/dashboard/wall?saved=1");
   const goMyPosts = () => navigate("/dashboard/wall/my-posts");
+
+  const openProfileDialog = () => {
+    setFeedNameDraft((userData.name || "").trim() || "");
+    setAvatarColorDraft(userData.avatarColor ?? null);
+    setProfileOpen(true);
+    setPostCount(null);
+    setProfileLoading(true);
+    axios
+      .get(`${API_BASE}/posts/user/my-posts`, {
+        params: { page: 1, limit: 1 },
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const total = res.data.pagination?.total;
+        setPostCount(typeof total === "number" ? total : 0);
+      })
+      .catch(() => setPostCount(null))
+      .finally(() => setProfileLoading(false));
+  };
+
+  const closeProfileDialog = () => {
+    setProfileOpen(false);
+  };
+
+  const saveFeedDisplayName = async () => {
+    const name = feedNameDraft.trim();
+    if (!name) {
+      window.alert("Display name cannot be empty.");
+      return;
+    }
+    try {
+      setSaveNameLoading(true);
+      const res = await axios.put(
+        `${API_BASE}/users/profile/edit`,
+        {
+          name,
+          avatarColor: normalizeHex(avatarColorDraft || "") || null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const updated = res.data.user;
+      const prev = JSON.parse(localStorage.getItem("user") || "{}");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...prev,
+          ...updated,
+          name: updated.name ?? name,
+        })
+      );
+      window.dispatchEvent(new Event("studyshare-user-updated"));
+      closeProfileDialog();
+    } catch (err) {
+      console.error("Profile update failed:", err);
+      window.alert(err.response?.data?.message || "Could not update profile.");
+    } finally {
+      setSaveNameLoading(false);
+    }
+  };
+
+  const colorPickerValue = normalizeHex(avatarColorDraft || "") || "#667eea";
 
   if (!isAuthenticated) {
     return (
@@ -126,8 +210,9 @@ const WallSidebar = ({
           <button
             type="button"
             className="wall-sidebar-avatar-btn"
-            onClick={goMyPosts}
-            aria-label="View my posts"
+            style={!userData.avatar ? avatarPlaceholderStyle(userData) : undefined}
+            onClick={openProfileDialog}
+            aria-label="Open profile and feed display name"
           >
             {userData.avatar ? (
               <img src={userData.avatar} alt="" />
@@ -161,17 +246,6 @@ const WallSidebar = ({
 
           <button
             type="button"
-            className={`wall-sidebar-nav-item ${notificationsActive ? "is-active" : ""}`}
-            onClick={goNotifications}
-          >
-            <span className="wall-sidebar-nav-icon" aria-hidden>
-              🔔
-            </span>
-            <span>Notifications</span>
-          </button>
-
-          <button
-            type="button"
             className={`wall-sidebar-nav-item ${savedActive ? "is-active" : ""}`}
             onClick={goSaved}
           >
@@ -196,62 +270,189 @@ const WallSidebar = ({
         </nav>
       </div>
 
-      {notificationsActive && (
-        <div className="wall-sidebar-panel">
-          <div className="wall-sidebar-panel-header">
-            <h3>Recent alerts ({notifications.length})</h3>
+      <div className="wall-sidebar-panel">
+        <div className="wall-sidebar-panel-header">
+          <h3>notifications</h3>
+        </div>
+        {notifications.length === 0 ? (
+          <div className="wall-sidebar-empty">
+            <p>No notifications yet</p>
           </div>
-          {notifications.length === 0 ? (
-            <div className="wall-sidebar-empty">
-              <p>No alerts yet</p>
-            </div>
-          ) : (
-            <div className="wall-sidebar-notifications-list">
-              {notifications.map((notif) => (
-                <div
-                  key={notif._id}
-                  className={`wall-sidebar-notif ${!notif.read ? "unread" : ""}`}
-                  onClick={() => {
+        ) : (
+          <div className="wall-sidebar-notifications-list">
+            {notifications.map((notif) => (
+              <div
+                key={notif._id}
+                className={`wall-sidebar-notif ${!notif.read ? "unread" : ""}`}
+                onClick={() => {
+                  setSelectedNotification(notif);
+                  if (!notif.read) markNotificationAsRead(notif._id);
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
                     setSelectedNotification(notif);
                     if (!notif.read) markNotificationAsRead(notif._id);
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      setSelectedNotification(notif);
-                      if (!notif.read) markNotificationAsRead(notif._id);
-                    }
-                  }}
+                  }
+                }}
+              >
+                <div
+                  className="wall-sidebar-notif-avatar"
+                  style={
+                    !notif.sender?.avatar
+                      ? avatarPlaceholderStyle(notif.sender)
+                      : undefined
+                  }
                 >
-                  <div className="wall-sidebar-notif-avatar">
-                    {notif.sender?.avatar ? (
-                      <img src={notif.sender.avatar} alt="" />
-                    ) : (
-                      <span>
-                        {notif.sender?.name?.charAt(0).toUpperCase() || "U"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="wall-sidebar-notif-body">
-                    <div className="wall-sidebar-notif-line">
-                      <strong>{notif.sender?.name || "Someone"}</strong>
-                      <span className="wall-sidebar-notif-type">
-                        {notif.type === "like" && " liked your post"}
-                        {notif.type === "comment" && " commented"}
-                        {notif.type === "reaction" && " reacted"}
-                        {notif.type === "follow" && " followed you"}
-                      </span>
-                    </div>
-                    {notif.post?.title && (
-                      <div className="wall-sidebar-notif-post">{notif.post.title}</div>
-                    )}
-                    <span className="wall-sidebar-notif-time">{formatDate(notif.createdAt)}</span>
-                  </div>
+                  {notif.sender?.avatar ? (
+                    <img src={notif.sender.avatar} alt="" />
+                  ) : (
+                    <span>
+                      {notif.sender?.name?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  )}
                 </div>
-              ))}
+                <div className="wall-sidebar-notif-body">
+                  <div className="wall-sidebar-notif-line">
+                    <strong>{notif.sender?.name || "Someone"}</strong>
+                    <span className="wall-sidebar-notif-type">
+                      {notif.type === "like" && " liked your post"}
+                      {notif.type === "comment" && " commented"}
+                      {notif.type === "reaction" && " reacted"}
+                      {notif.type === "follow" && " followed you"}
+                    </span>
+                  </div>
+                  {notif.post?.title && (
+                    <div className="wall-sidebar-notif-post">{notif.post.title}</div>
+                  )}
+                  <span className="wall-sidebar-notif-time">{formatDate(notif.createdAt)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {profileOpen && (
+        <div
+          className="wall-profile-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wall-profile-dialog-title"
+          onClick={closeProfileDialog}
+        >
+          <div
+            className="wall-profile-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wall-profile-modal-hero">
+              <button
+                type="button"
+                className="wall-profile-modal-close"
+                onClick={closeProfileDialog}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+              <h2 id="wall-profile-dialog-title" className="wall-profile-modal-title">
+                Your profile
+              </h2>
+              <p className="wall-profile-modal-subtitle">
+                Manage your display name and account details.
+              </p>
             </div>
-          )}
+            <div className="wall-profile-modal-rule" aria-hidden="true" />
+            <div className="wall-profile-modal-body">
+              <div className="wall-profile-field">
+                <label htmlFor="wall-profile-display-name">Display name (feed)</label>
+                <input
+                  id="wall-profile-display-name"
+                  type="text"
+                  value={feedNameDraft}
+                  onChange={(e) => setFeedNameDraft(e.target.value)}
+                  placeholder="Name shown on posts"
+                  autoComplete="name"
+                />
+                <p className="wall-profile-hint">
+                  This is how your name appears on the wall and on your posts.
+                </p>
+              </div>
+              <div className="wall-profile-field wall-profile-field--color">
+                <label className="wall-profile-field-label-block">
+                  Profile icon color
+                </label>
+                <p className="wall-profile-hint">
+                  Letter avatar on the wall, posts, and notifications when no photo is set.
+                </p>
+                <div className="wall-profile-color-swatches" role="group" aria-label="Preset colors">
+                  {AVATAR_COLOR_PRESETS.map((hex) => (
+                    <button
+                      key={hex}
+                      type="button"
+                      className={`wall-profile-color-swatch ${
+                        normalizeHex(avatarColorDraft || "") === hex ? "is-selected" : ""
+                      }`}
+                      style={{ background: hex }}
+                      aria-label={`Use color ${hex}`}
+                      onClick={() => setAvatarColorDraft(hex)}
+                    />
+                  ))}
+                </div>
+                <div className="wall-profile-color-row">
+                  <label htmlFor="wall-profile-color-custom">Custom color</label>
+                  <input
+                    id="wall-profile-color-custom"
+                    type="color"
+                    value={colorPickerValue}
+                    onChange={(e) => setAvatarColorDraft(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="wall-profile-reset-color"
+                    onClick={() => setAvatarColorDraft(null)}
+                  >
+                    Default
+                  </button>
+                </div>
+              </div>
+              <div className="wall-profile-readonly">
+                <span className="wall-profile-readonly-label">IT number</span>
+                <span className="wall-profile-readonly-value">
+                  {displayStudentId(userData) || "—"}
+                </span>
+              </div>
+              <div className="wall-profile-readonly">
+                <span className="wall-profile-readonly-label">Email</span>
+                <span className="wall-profile-readonly-value wall-profile-email">
+                  {userData.email || "—"}
+                </span>
+              </div>
+              <div className="wall-profile-readonly">
+                <span className="wall-profile-readonly-label">Posts created</span>
+                <span className="wall-profile-readonly-value">
+                  {profileLoading ? "…" : postCount != null ? String(postCount) : "—"}
+                </span>
+              </div>
+            </div>
+            <div className="wall-profile-modal-footer">
+              <button
+                type="button"
+                className="wall-profile-btn wall-profile-btn--ghost"
+                onClick={closeProfileDialog}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="wall-profile-btn wall-profile-btn--primary"
+                onClick={saveFeedDisplayName}
+                disabled={saveNameLoading}
+              >
+                {saveNameLoading ? "Saving…" : "Save profile"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

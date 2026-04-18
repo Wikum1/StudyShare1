@@ -84,7 +84,7 @@ exports.createPost = async (req, res) => {
     console.log("✅ Post saved. ID:", newPost._id);
     console.log("Photos:", photos.length, "| Video:", !!video);
 
-    await newPost.populate("author", "name avatar email");
+    await newPost.populate("author", "name avatar email avatarColor");
 
     res.status(201).json({
       message: "Post created successfully",
@@ -129,12 +129,12 @@ exports.getAllPosts = async (req, res) => {
 
     const totalPosts = await Post.countDocuments(filter);
     const posts = await Post.find(filter)
-      .populate("author", "name avatar email bio")
+      .populate("author", "name avatar email bio avatarColor")
       .populate({
         path: "comments",
         populate: {
           path: "author",
-          select: "name avatar email"
+          select: "name avatar email avatarColor"
         }
       })
       .sort(sortOptions)
@@ -171,12 +171,12 @@ exports.getPostById = async (req, res) => {
       { $inc: { views: 1 } },
       { new: true }
     )
-      .populate("author", "name avatar email bio followers")
+      .populate("author", "name avatar email bio followers avatarColor")
       .populate({
         path: "comments",
         populate: {
           path: "author",
-          select: "name avatar email",
+          select: "name avatar email avatarColor",
         },
       })
       .populate("reactions");
@@ -222,7 +222,7 @@ exports.updatePost = async (req, res) => {
     post.editedAt = new Date();
 
     await post.save();
-    await post.populate("author", "name avatar email");
+    await post.populate("author", "name avatar email avatarColor");
 
     res.status(200).json({
       message: "Post updated successfully",
@@ -431,14 +431,14 @@ exports.getUserSavedPosts = async (req, res) => {
     const savedPosts = await SavedPost.find({ user: userId })
       .populate({
         path: "post",
-        populate: { path: "author", select: "name avatar email" },
+        populate: { path: "author", select: "name avatar email avatarColor" },
         populate: [
-          { path: "author", select: "name avatar email" },
+          { path: "author", select: "name avatar email avatarColor" },
           {
             path: "comments",
             populate: {
               path: "author",
-              select: "name avatar email"
+              select: "name avatar email avatarColor"
             }
           }
         ]
@@ -493,7 +493,7 @@ exports.getUserPosts = async (req, res) => {
     console.log("Total posts found with userId:", totalUserPosts);
 
     const userPosts = await Post.find({ author: userId })
-      .populate("author", "name avatar email bio")
+      .populate("author", "name avatar email bio avatarColor")
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip((page - 1) * limit);
@@ -562,7 +562,7 @@ exports.addComment = async (req, res) => {
 
     const populatedComment = await newComment.populate(
       "author",
-      "name avatar email"
+      "name avatar email avatarColor"
     );
 
     res.status(201).json({

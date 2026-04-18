@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useSearchParams } from "react-router-dom";
+import { avatarPlaceholderStyle } from "../utils/avatarPlaceholderStyle";
 import "./WallPage.css";
 import WallSidebar from "../components/WallSidebar";
 import CreatePost from "../components/CreatePost";
@@ -21,7 +22,16 @@ const WallPage = () => {
   const showSavedPosts = searchParams.get("saved") === "1";
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
-  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const [userData, setUserData] = useState(() =>
+    JSON.parse(localStorage.getItem("user") || "{}")
+  );
+
+  useEffect(() => {
+    const syncUser = () =>
+      setUserData(JSON.parse(localStorage.getItem("user") || "{}"));
+    window.addEventListener("studyshare-user-updated", syncUser);
+    return () => window.removeEventListener("studyshare-user-updated", syncUser);
+  }, []);
 
   // Fetch posts
   useEffect(() => {
@@ -67,7 +77,7 @@ const WallPage = () => {
         page,
         limit: 10,
         sortBy,
-        ...(searchQuery && { search: searchQuery })
+        ...(!showSavedPosts && searchQuery && { search: searchQuery })
       };
 
       let url = `${API_BASE}/posts`;
@@ -138,48 +148,62 @@ const WallPage = () => {
       {/* Main Feed */}
       <main className="wall-main">
         <div className="wall-controls">
-          <div className="search-section">
-            <div className="wall-search-shell">
-              <span className="wall-search-icon" aria-hidden="true">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M15.803 15.803 21 21"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="search-input"
-                aria-label="Search posts"
-                autoComplete="off"
-              />
+          {showSavedPosts ? (
+            <header className="wall-saved-header">
+              <h2 className="wall-saved-title">Saved posts</h2>
+              <p className="wall-saved-subtitle">Posts you have bookmarked</p>
+              <div className="wall-saved-header-rule" aria-hidden="true" />
+            </header>
+          ) : (
+            <div className="search-section">
+              <div className="wall-search-shell">
+                <span className="wall-search-icon" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M15.803 15.803 21 21"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="search-input"
+                  aria-label="Search posts"
+                  autoComplete="off"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          {token && (
+          {token && !showSavedPosts && (
             <div className="wall-composer-card">
               <div className="wall-composer-top">
-                <div className="wall-composer-avatar" aria-hidden="true">
+                <div
+                  className="wall-composer-avatar"
+                  aria-hidden="true"
+                  style={
+                    !userData?.avatar ? avatarPlaceholderStyle(userData) : undefined
+                  }
+                >
                   {userData?.avatar ? (
                     <img src={userData.avatar} alt="" />
                   ) : (

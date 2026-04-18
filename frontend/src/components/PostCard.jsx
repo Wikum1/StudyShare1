@@ -1,17 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { avatarPlaceholderStyle } from "../utils/avatarPlaceholderStyle";
 import "./PostCard.css";
 
 const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = userData?._id;
+  const userId = userData?._id ?? userData?.id;
 
-  // Simple approach: just use the ID as-is
   const postId = post._id;
-  
-  console.log("📦 PostCard - postId:", postId);
-  console.log("📦 PostCard - postId type:", typeof postId);
   const [isLiked, setIsLiked] = useState(post.likes?.includes(userId));
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
   const [isSaved, setIsSaved] = useState(false);
@@ -23,6 +20,8 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const commentDisplayCount = Math.max(
     comments.length,
@@ -30,19 +29,38 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   );
 
   const API_BASE = "http://localhost:5000/api";
-  
-  // Safely compare IDs (convert to strings and trim)
-  const authorId = String(post.author?._id || "").trim();
-  const currentUserId = String(userId || "").trim();
-  const isAuthor = authorId && currentUserId && authorId === currentUserId;
-  
-  console.log("👤 Author check:");
-  console.log("   post.author._id:", post.author?._id);
-  console.log("   authorId (string):", authorId);
-  console.log("   userId:", userId);
-  console.log("   currentUserId (string):", currentUserId);
-  console.log("   isAuthor:", isAuthor);
-  console.log("   Full user data:", userData);
+
+  const authorId = String(
+    post.author?._id ?? post.author?.id ?? post.author ?? ""
+  ).trim();
+  const currentUserId = String(userId ?? "").trim();
+  const isAuthor = Boolean(
+    token && authorId && currentUserId && authorId === currentUserId
+  );
+
+  useEffect(() => {
+    if (isEditing) return;
+    setEditedTitle(post.title);
+    setEditedContent(post.content);
+  }, [post._id, post.title, post.content, isEditing]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDoc = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   // Format date
   const formatDate = (date) => {
@@ -113,6 +131,7 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
       onPostDeleted(postId);
     } catch (error) {
       console.error("Failed to delete post:", error);
+      alert(error.response?.data?.message || "Could not delete this post.");
     }
   };
 
@@ -138,7 +157,7 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update post:", error);
-      alert("Failed to update post");
+      alert(error.response?.data?.message || "Failed to update post");
     } finally {
       setLoading(false);
     }
@@ -173,7 +192,10 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
     <div className="post-card">
       <div className="post-header">
         <div className="post-author-info">
-          <div className="author-avatar">
+          <div
+            className="author-avatar"
+            style={!post.author?.avatar ? avatarPlaceholderStyle(post.author) : undefined}
+          >
             {post.author?.avatar ? (
               <img src={post.author.avatar} alt={post.author.name} />
             ) : (
@@ -190,21 +212,51 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
         </div>
 
         {isAuthor && (
-          <div className="post-actions">
+          <div className="post-card-menu-wrap" ref={menuRef}>
             <button
-              className="btn-action"
-              onClick={() => setIsEditing(!isEditing)}
-              title="Edit"
+              type="button"
+              className="post-card-menu-trigger"
+              aria-label="Post options"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
             >
-              ✎
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="12" cy="19" r="2" />
+              </svg>
             </button>
-            <button
-              className="btn-action btn-delete"
-              onClick={handleDelete}
-              title="Delete"
-            >
-              🗑
-            </button>
+            {menuOpen && (
+              <ul className="post-card-menu" role="menu">
+                <li role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="post-card-menu-item"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Edit
+                  </button>
+                </li>
+                <li role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="post-card-menu-item post-card-menu-item--danger"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleDelete();
+                    }}
+                  >
+                    Delete
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
         )}
       </div>
@@ -326,27 +378,6 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
         <button className="btn-action" onClick={handleShare} type="button">
           📤 Share
         </button>
-
-        {isAuthor && (
-          <>
-            <button
-              type="button"
-              className={`btn-action ${isEditing ? "active" : ""}`}
-              onClick={() => setIsEditing(!isEditing)}
-              title="Edit post"
-            >
-              ✎ Edit
-            </button>
-            <button
-              type="button"
-              className="btn-action btn-delete"
-              onClick={handleDelete}
-              title="Delete post"
-            >
-              🗑 Delete
-            </button>
-          </>
-        )}
       </div>
 
       {showComments && (
@@ -360,7 +391,14 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
               comments.map((comment, idx) => (
                 <div key={idx} className="comment-item">
                   <div className="comment-author">
-                    <div className="comment-avatar">
+                    <div
+                      className="comment-avatar"
+                      style={
+                        !comment.author?.avatar
+                          ? avatarPlaceholderStyle(comment.author)
+                          : undefined
+                      }
+                    >
                       {comment.author?.avatar ? (
                         <img src={comment.author.avatar} alt={comment.author.name} />
                       ) : (

@@ -14,7 +14,16 @@ const MyWallPostsPage = () => {
   const location = useLocation();
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
-  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const [userData, setUserData] = useState(() =>
+    JSON.parse(localStorage.getItem("user") || "{}")
+  );
+
+  useEffect(() => {
+    const syncUser = () =>
+      setUserData(JSON.parse(localStorage.getItem("user") || "{}"));
+    window.addEventListener("studyshare-user-updated", syncUser);
+    return () => window.removeEventListener("studyshare-user-updated", syncUser);
+  }, []);
 
   useEffect(() => {
     const fetchMine = async () => {
@@ -69,9 +78,12 @@ const MyWallPostsPage = () => {
       />
 
       <main className="wall-main">
-        <div className="wall-header">
-          <h1>My posts</h1>
-          <p>Posts you have shared on the wall</p>
+        <div className="wall-controls">
+          <header className="wall-saved-header">
+            <h2 className="wall-saved-title">My posts</h2>
+            <p className="wall-saved-subtitle">Posts you have shared on the wall</p>
+            <div className="wall-saved-header-rule" aria-hidden="true" />
+          </header>
         </div>
 
         <div className="posts-section">
