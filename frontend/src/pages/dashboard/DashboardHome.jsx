@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getPlans } from "../../services/studyPlanService";
 import StudyPlansOverview from "../../components/StudyPlansOverview";
+import WeeklyLearningReport from "../../components/WeeklyLearningReport";
 import "./DashboardHome.css";
 
 export default function DashboardHome() {
@@ -351,6 +352,11 @@ export default function DashboardHome() {
               </a>
             ))}
           </div>
+        </section>
+
+        {/* WEEKLY LEARNING REPORT */}
+        <section className="dashboard-section">
+          <WeeklyLearningReport />
         </section>
 
         {/* STUDY PLANS OVERVIEW */}
