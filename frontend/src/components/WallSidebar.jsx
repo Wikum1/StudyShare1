@@ -1,23 +1,47 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "./WallSidebar.css";
 
-const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPostDeleted = () => {} }) => {
+const displayStudentId = (user) => {
+  if (!user?.email) return "";
+  const local = String(user.email).split("@")[0] || "";
+  return local.toLowerCase();
+};
+
+const WallSidebar = ({
+  posts: _posts = [],
+  userData = {},
+  onPostUpdated = () => {},
+  onPostDeleted = () => {},
+}) => {
   const [notifications, setNotifications] = useState([]);
-  const [activeTab, setActiveTab] = useState("profile");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [editingPostId, setEditingPostId] = useState(null);
-  const [editedTitle, setEditedTitle] = useState("");
-  const [editedContent, setEditedContent] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = storedUser?._id || storedUser?.id;
 
-  // Check authentication
+  const pathname = location.pathname;
+  const isMyPostsRoute = pathname.includes("/wall/my-posts");
+  const tab = searchParams.get("tab");
+  const saved = searchParams.get("saved");
+
+  const feedActive =
+    pathname.includes("/wall") &&
+    !isMyPostsRoute &&
+    tab !== "notifications" &&
+    saved !== "1";
+  const notificationsActive = tab === "notifications" && !isMyPostsRoute;
+  const savedActive = saved === "1" && !isMyPostsRoute;
+  const myPostsActive = isMyPostsRoute;
+
   useEffect(() => {
     if (token && userId) {
       setIsAuthenticated(true);
@@ -39,7 +63,6 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
     }
   };
 
-  // Mark notification as read
   const markNotificationAsRead = async (notificationId) => {
     try {
       await axios.put(
@@ -47,79 +70,13 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotifications(notifications.map(notif => 
-        notif._id === notificationId ? { ...notif, read: true } : notif
-      ));
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
+      );
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
   };
-
-  // Handle edit post
-  const handleEditPost = (post) => {
-    setEditingPostId(post._id);
-    setEditedTitle(post.title);
-    setEditedContent(post.content);
-  };
-
-  // Save edited post
-  const handleSaveEdit = async (postId) => {
-    if (!editedTitle.trim() || !editedContent.trim()) {
-      alert("Title and content cannot be empty");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await axios.put(
-        `${API_BASE}/posts/${postId}`,
-        {
-          title: editedTitle,
-          content: editedContent
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      onPostUpdated(response.data.post);
-      setEditingPostId(null);
-      setEditedTitle("");
-      setEditedContent("");
-    } catch (error) {
-      console.error("Failed to update post:", error);
-      alert("Failed to update post");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete post
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-
-    try {
-      await axios.delete(
-        `${API_BASE}/posts/${postId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      onPostDeleted(postId);
-    } catch (error) {
-      console.error("Failed to delete post:", error);
-      alert("Failed to delete post");
-    }
-  };
-
-  // Cancel editing
-  const handleCancelEdit = () => {
-    setEditingPostId(null);
-    setEditedTitle("");
-    setEditedContent("");
-  };
-
-  // Filter user's posts from the posts prop
-  const userPosts = posts.filter(post => {
-    const postAuthorId = post.author?._id || post.author;
-    return postAuthorId === userId;
-  });
 
   const formatDate = (date) => {
     const now = new Date();
@@ -137,18 +94,10 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
     return postDate.toLocaleDateString();
   };
 
-  const getNotificationIcon = (type) => {
-    const icons = {
-      like: "👍",
-      reaction: "😊",
-      comment: "💬",
-      reply: "↩️",
-      follow: "👥",
-      resource: "📚",
-      task: "✅"
-    };
-    return icons[type] || "🔔";
-  };
+  const goFeed = () => navigate("/dashboard/wall");
+  const goNotifications = () => navigate("/dashboard/wall?tab=notifications");
+  const goSaved = () => navigate("/dashboard/wall?saved=1");
+  const goMyPosts = () => navigate("/dashboard/wall/my-posts");
 
   if (!isAuthenticated) {
     return (
@@ -162,7 +111,7 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
               Login
             </a>
             <p className="signup-hint">
-              Don't have an account? <a href="/register">Sign up</a>
+              Don&apos;t have an account? <a href="/register">Sign up</a>
             </p>
           </div>
         </div>
@@ -171,292 +120,168 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
   }
 
   return (
-    <aside className="wall-sidebar">
-      {activeTab === "profile" && userData && (
-        <div className="sidebar-content profile-tab">
-          <div className="profile-card">
-            <div className="profile-avatar">
-              {userData.avatar ? (
-                <img src={userData.avatar} alt={userData.name} />
-              ) : (
-                <div className="avatar-placeholder">
-                  {userData.name?.charAt(0).toUpperCase() || "U"}
-                </div>
-              )}
-            </div>
-
-            <div className="profile-info">
-              <h3 className="profile-name">{userData.name}</h3>
-              <p className="profile-email">{userData.email}</p>
-
-              {userData.bio && (
-                <p className="profile-bio">{userData.bio}</p>
-              )}
-
-              <div className="profile-stats">
-                <div className="stat">
-                  <span className="stat-label">Followers</span>
-                  <span className="stat-value">
-                    {userData.followers?.length || 0}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Following</span>
-                  <span className="stat-value">
-                    {userData.following?.length || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
+    <aside className="wall-sidebar wall-sidebar--new">
+      <div className="wall-sidebar-card">
+        <div className="wall-sidebar-profile">
+          <button
+            type="button"
+            className="wall-sidebar-avatar-btn"
+            onClick={goMyPosts}
+            aria-label="View my posts"
+          >
+            {userData.avatar ? (
+              <img src={userData.avatar} alt="" />
+            ) : (
+              <span className="wall-sidebar-avatar-letter">
+                {userData.name?.charAt(0).toUpperCase() || "U"}
+              </span>
+            )}
+          </button>
+          <div className="wall-sidebar-profile-text">
+            <div className="wall-sidebar-name">{userData.name || "Member"}</div>
+            <div className="wall-sidebar-id">{displayStudentId(userData)}</div>
           </div>
         </div>
-      )}
 
-      {/* My Posts Tab - SIMPLIFIED */}
-      {activeTab === "posts" && (
-        <div className="sidebar-content posts-tab">
-          <div className="posts-header">
-            <h3>Your Posts ({userPosts.length})</h3>
+        <div className="wall-sidebar-rule" />
+
+        <nav className="wall-sidebar-nav" aria-label="Wall">
+          <button
+            type="button"
+            className={`wall-sidebar-nav-item ${feedActive ? "is-active" : ""}`}
+            onClick={goFeed}
+          >
+            <span className="wall-sidebar-nav-icon" aria-hidden>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM10 5.5h10v2H10v-2zm0 5.5h10v2H10v-2zm0 5.5h10v2H10v-2z" />
+              </svg>
+            </span>
+            <span>Feed</span>
+          </button>
+
+          <button
+            type="button"
+            className={`wall-sidebar-nav-item ${notificationsActive ? "is-active" : ""}`}
+            onClick={goNotifications}
+          >
+            <span className="wall-sidebar-nav-icon" aria-hidden>
+              🔔
+            </span>
+            <span>Notifications</span>
+          </button>
+
+          <button
+            type="button"
+            className={`wall-sidebar-nav-item ${savedActive ? "is-active" : ""}`}
+            onClick={goSaved}
+          >
+            <span className="wall-sidebar-nav-icon" aria-hidden>
+              🔖
+            </span>
+            <span>Saved posts</span>
+          </button>
+
+          <button
+            type="button"
+            className={`wall-sidebar-nav-item ${myPostsActive ? "is-active" : ""}`}
+            onClick={goMyPosts}
+          >
+            <span className="wall-sidebar-nav-icon" aria-hidden>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </span>
+            <span>My posts</span>
+          </button>
+        </nav>
+      </div>
+
+      {notificationsActive && (
+        <div className="wall-sidebar-panel">
+          <div className="wall-sidebar-panel-header">
+            <h3>Recent alerts ({notifications.length})</h3>
           </div>
-
-          {userPosts.length === 0 ? (
-            <div className="empty-state">
-              <p>You haven't posted yet</p>
-              <p className="hint">Share your first post to get started!</p>
-            </div>
-          ) : (
-            <div className="posts-list">
-              {userPosts.map(post => (
-                <div key={post._id} className="post-mini">
-                  {editingPostId === post._id ? (
-                    // Edit Form
-                    <div className="post-edit-form">
-                      <input
-                        type="text"
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
-                        className="edit-input"
-                        placeholder="Post title"
-                      />
-                      <textarea
-                        value={editedContent}
-                        onChange={(e) => setEditedContent(e.target.value)}
-                        className="edit-textarea"
-                        placeholder="Post content"
-                        rows="4"
-                      />
-                      <div className="edit-form-actions">
-                        <button
-                          className="btn-cancel"
-                          onClick={handleCancelEdit}
-                          disabled={loading}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          className="btn-save"
-                          onClick={() => handleSaveEdit(post._id)}
-                          disabled={loading}
-                        >
-                          {loading ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Post Display
-                    <>
-                      <div className="post-mini-header">
-                        <h4 className="post-mini-title">{post.title}</h4>
-                        <div className="post-mini-actions">
-                          <button
-                            className="btn-edit"
-                            onClick={() => handleEditPost(post)}
-                            title="Edit"
-                          >
-                            ✎
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => handleDeletePost(post._id)}
-                            title="Delete"
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      </div>
-                      <p className="post-mini-content">{post.content.substring(0, 100)}...</p>
-                      <span className="post-mini-date">{formatDate(post.createdAt)}</span>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Notifications Tab */}
-      {activeTab === "notifications" && (
-        <div className="sidebar-content notifications-tab">
-          <div className="notifications-header">
-            <h3>Recent Alerts ({notifications.length})</h3>
-          </div>
-
           {notifications.length === 0 ? (
-            <div className="empty-state">
+            <div className="wall-sidebar-empty">
               <p>No alerts yet</p>
-              <p className="hint">You'll see notifications here</p>
             </div>
           ) : (
-            <div className="notifications-list">
-              {notifications.map(notif => (
+            <div className="wall-sidebar-notifications-list">
+              {notifications.map((notif) => (
                 <div
                   key={notif._id}
-                  className={`notification-item ${!notif.read ? "unread" : ""}`}
+                  className={`wall-sidebar-notif ${!notif.read ? "unread" : ""}`}
                   onClick={() => {
                     setSelectedNotification(notif);
-                    if (!notif.read) {
-                      markNotificationAsRead(notif._id);
+                    if (!notif.read) markNotificationAsRead(notif._id);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelectedNotification(notif);
+                      if (!notif.read) markNotificationAsRead(notif._id);
                     }
                   }}
-                  style={{ cursor: "pointer" }}
                 >
-                  {/* User Avatar */}
-                  <div className="notif-avatar">
+                  <div className="wall-sidebar-notif-avatar">
                     {notif.sender?.avatar ? (
-                      <img src={notif.sender.avatar} alt={notif.sender?.name} />
+                      <img src={notif.sender.avatar} alt="" />
                     ) : (
-                      <div className="avatar-placeholder">
+                      <span>
                         {notif.sender?.name?.charAt(0).toUpperCase() || "U"}
-                      </div>
+                      </span>
                     )}
                   </div>
-
-                  {/* Notification Content */}
-                  <div className="notif-details">
-                    <div className="notif-action">
-                      <span className="notif-actor-name">{notif.sender?.name || "Someone"}</span>
-                      <span className="notif-action-type">
-                        {notif.type === "like" && "liked"}
-                        {notif.type === "reaction" && `reacted with ${notif.reactionType}`}
-                        {notif.type === "comment" && "commented on"}
-                        {notif.type === "reply" && "replied to"}
-                        {notif.type === "follow" && "started following"}
-                        {notif.type === "resource" && "shared a resource"}
-                        {notif.type === "task" && "created a task"}
+                  <div className="wall-sidebar-notif-body">
+                    <div className="wall-sidebar-notif-line">
+                      <strong>{notif.sender?.name || "Someone"}</strong>
+                      <span className="wall-sidebar-notif-type">
+                        {notif.type === "like" && " liked your post"}
+                        {notif.type === "comment" && " commented"}
+                        {notif.type === "reaction" && " reacted"}
+                        {notif.type === "follow" && " followed you"}
                       </span>
                     </div>
-
-                    {notif.post && (
-                      <div className="notif-post-title">
-                        📌 {notif.post?.title || "your post"}
-                      </div>
+                    {notif.post?.title && (
+                      <div className="wall-sidebar-notif-post">{notif.post.title}</div>
                     )}
-
-                    {notif.resource && (
-                      <div className="notif-resource-title">
-                        📚 {notif.resource?.title || "a resource"}
-                      </div>
-                    )}
-
-                    {notif.task && (
-                      <div className="notif-task-title">
-                        ✅ {notif.task?.title || "a task"}
-                      </div>
-                    )}
-
-                    <span className="notif-time">
-                      {formatDate(notif.createdAt)}
-                    </span>
+                    <span className="wall-sidebar-notif-time">{formatDate(notif.createdAt)}</span>
                   </div>
-
-                  {!notif.read && (
-                    <div className="notif-unread-badge" />
-                  )}
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
 
-          {/* Selected Notification Detail View */}
-          {selectedNotification && (
-            <div className="notif-detail-modal">
-              <div className="notif-detail-header">
-                <h4>Notification Details</h4>
-                <button 
-                  className="btn-close" 
-                  onClick={() => setSelectedNotification(null)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="notif-detail-content">
-                <div className="notif-detail-user">
-                  {selectedNotification.sender?.avatar ? (
-                    <img src={selectedNotification.sender.avatar} alt={selectedNotification.sender?.name} />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {selectedNotification.sender?.name?.charAt(0).toUpperCase() || "U"}
-                    </div>
-                  )}
-                  <div>
-                    <p className="detail-user-name">{selectedNotification.sender?.name || "Someone"}</p>
-                    <p className="detail-action">
-                      {selectedNotification.type === "like" && "👍 Liked your post"}
-                      {selectedNotification.type === "reaction" && `😊 Reacted with ${selectedNotification.reactionType}`}
-                      {selectedNotification.type === "comment" && "💬 Commented on your post"}
-                      {selectedNotification.type === "reply" && "↩️ Replied to your post"}
-                      {selectedNotification.type === "follow" && "👥 Started following you"}
-                      {selectedNotification.type === "resource" && "📚 Shared a new resource"}
-                      {selectedNotification.type === "task" && "✅ Created a new task"}
-                    </p>
-                  </div>
-                </div>
-
-                {selectedNotification.post && (
-                  <div className="notif-detail-post">
-                    <h5>Post:</h5>
-                    <p className="detail-post-title">{selectedNotification.post?.title}</p>
-                  </div>
-                )}
-
-                {selectedNotification.resource && (
-                  <div className="notif-detail-resource">
-                    <h5>Resource:</h5>
-                    <p className="detail-resource-title">{selectedNotification.resource?.title}</p>
-                  </div>
-                )}
-
-                {selectedNotification.task && (
-                  <div className="notif-detail-task">
-                    <h5>Task:</h5>
-                    <p className="detail-task-title">{selectedNotification.task?.title}</p>
-                  </div>
-                )}
-
-                {selectedNotification.relatedComment && (
-                  <div className="notif-detail-comment">
-                    <h5>Comment:</h5>
-                    <p className="detail-comment-text">{selectedNotification.relatedComment?.content || selectedNotification.message}</p>
-                  </div>
-                )}
-
-                {selectedNotification.message && !selectedNotification.relatedComment && (
-                  <p className="detail-message">{selectedNotification.message}</p>
-                )}
-
-                {selectedNotification.post && (
-                  <a 
-                    href={`#post-${selectedNotification.post._id}`}
-                    className="btn-view-post"
-                  >
-                    View Post →
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+      {selectedNotification && (
+        <div className="notif-detail-modal">
+          <div className="notif-detail-header">
+            <h4>Notification</h4>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={() => setSelectedNotification(null)}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="notif-detail-content">
+            <p className="detail-action">
+              {selectedNotification.type === "like" && "👍 Liked your post"}
+              {selectedNotification.type === "comment" && "💬 Commented on your post"}
+            </p>
+            {selectedNotification.post && (
+              <a
+                href={`#post-${selectedNotification.post._id}`}
+                className="btn-view-post"
+                onClick={() => setSelectedNotification(null)}
+              >
+                View post →
+              </a>
+            )}
+          </div>
         </div>
       )}
     </aside>
@@ -464,4 +289,3 @@ const WallSidebar = ({ posts = [], userData = {}, onPostUpdated = () => {}, onPo
 };
 
 export default WallSidebar;
-

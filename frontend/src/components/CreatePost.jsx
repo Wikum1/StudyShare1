@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "./CreatePost.css";
 
-const CreatePost = ({ onClose, onPostCreated }) => {
+const CreatePost = ({ onClose, onPostCreated, pickerIntent = null }) => {
+  const photoInputRef = useRef(null);
+  const videoInputRef = useRef(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState("");
   const [photos, setPhotos] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [video, setVideo] = useState(null);
@@ -15,6 +16,18 @@ const CreatePost = ({ onClose, onPostCreated }) => {
 
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (pickerIntent === "photo") {
+      const t = setTimeout(() => photoInputRef.current?.click(), 150);
+      return () => clearTimeout(t);
+    }
+    if (pickerIntent === "video") {
+      const t = setTimeout(() => videoInputRef.current?.click(), 150);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [pickerIntent]);
 
   // Handle photo selection
   const handlePhotoSelect = (e) => {
@@ -91,16 +104,11 @@ const CreatePost = ({ onClose, onPostCreated }) => {
 
     try {
       setLoading(true);
-      const tagsArray = tags
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag !== "");
 
       // Create FormData for file uploads
       const formData = new FormData();
       formData.append("title", title.trim());
       formData.append("content", content.trim());
-      formData.append("tags", JSON.stringify(tagsArray));
 
       // Add photos
       photos.forEach(photo => {
@@ -126,7 +134,6 @@ const CreatePost = ({ onClose, onPostCreated }) => {
       onPostCreated(response.data.post);
       setTitle("");
       setContent("");
-      setTags("");
       setPhotos([]);
       setPhotoPreviews([]);
       setVideo(null);
@@ -175,23 +182,11 @@ const CreatePost = ({ onClose, onPostCreated }) => {
             <span className="char-count">{content.length} characters</span>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="tags">Tags (comma separated)</label>
-            <input
-              id="tags"
-              type="text"
-              placeholder="e.g., math, study-tips, questions"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="form-input"
-            />
-            <span className="hint">Separate tags with commas</span>
-          </div>
-
           {/* Photo Upload */}
           <div className="form-group">
             <label htmlFor="photos">Add Photos (max 10)</label>
             <input
+              ref={photoInputRef}
               id="photos"
               type="file"
               multiple
@@ -226,6 +221,7 @@ const CreatePost = ({ onClose, onPostCreated }) => {
           <div className="form-group">
             <label htmlFor="video">Add Video (max 1, under 5MB)</label>
             <input
+              ref={videoInputRef}
               id="video"
               type="file"
               accept="video/*"

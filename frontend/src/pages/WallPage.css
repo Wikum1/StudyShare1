@@ -45,33 +45,207 @@
 
 .search-section {
   display: flex;
+  width: 100%;
+  padding: 6px 8px;
+  background: #f0f2f5;
+  border-radius: 16px;
+  box-sizing: border-box;
 }
 
-.search-input {
+.wall-search-shell {
+  display: flex;
+  align-items: center;
   flex: 1;
-  padding: 14px 18px;
-  font-size: 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  background: white;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 18px 10px 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.wall-search-shell:focus-within {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+}
+
+.wall-search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* Override global App.css `input` rules (border / radius / focus ring) */
+.wall-search-shell .search-input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 0.95rem;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   font-family: inherit;
+  color: #1e293b;
+  transition: color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none !important;
 }
 
-.search-input::placeholder {
-  color: #cbd5e1;
+.wall-search-shell .search-input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+.wall-search-shell .search-input::placeholder {
+  color: #9ca3af;
+}
+
+.wall-search-shell .search-input:focus,
+.wall-search-shell .search-input:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* LinkedIn-style inline composer (under search) */
+.wall-composer-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 8px 14px 4px;
+}
+
+.wall-composer-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wall-composer-avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+}
+
+.wall-composer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wall-composer-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.wall-composer-trigger {
+  flex: 1;
+  text-align: left;
+  padding: 9px 16px;
+  font-size: 0.95rem;
+  color: #64748b;
+  background: #f0f2f5;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+.wall-composer-trigger:hover {
+  background: #e4e6eb;
+}
+
+.wall-composer-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 6px 0 4px;
+}
+
+.wall-composer-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: 2px;
+}
+
+.wall-composer-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.wall-composer-action:hover {
+  background: #f3f4f6;
+}
+
+.wall-composer-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wall-composer-action--compose .wall-composer-action-icon {
+  color: #e44d3a;
+}
+
+.wall-composer-action--photo .wall-composer-action-icon {
+  color: #45bd62;
+}
+
+.wall-composer-action--video .wall-composer-action-icon {
+  color: #8639f0;
 }
 
 .filter-section {
   display: flex;
   gap: 18px;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.wall-filter-sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wall-sort-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .sort-select {
@@ -259,8 +433,9 @@
     width: 100%;
   }
 
-  .search-input {
+  .wall-search-shell .search-input {
     width: 100%;
+    min-width: 0;
   }
 
   .sort-select,
@@ -320,7 +495,7 @@
     gap: 10px;
   }
 
-  .search-input {
+  .wall-search-shell .search-input {
     font-size: 16px; /* Prevents zoom on iOS */
   }
 

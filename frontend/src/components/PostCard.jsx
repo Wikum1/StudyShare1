@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./PostCard.css";
-import ReactionPicker from "./ReactionPicker";
 
 const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const token = localStorage.getItem("token");
@@ -16,7 +15,6 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const [isLiked, setIsLiked] = useState(post.likes?.includes(userId));
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
   const [isSaved, setIsSaved] = useState(false);
-  const [showReactions, setShowReactions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(post.title);
   const [editedContent, setEditedContent] = useState(post.content);
@@ -25,6 +23,11 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+
+  const commentDisplayCount = Math.max(
+    comments.length,
+    Number(post.commentsCount) || 0
+  );
 
   const API_BASE = "http://localhost:5000/api";
   
@@ -74,6 +77,27 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
       setIsSaved(!isSaved);
     } catch (error) {
       console.error("Failed to toggle save:", error);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/wall#post-${postId}`;
+    const title = post.title?.trim() || "StudyShare post";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        window.alert("Link copied to clipboard");
+      }
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(url);
+        window.alert("Link copied to clipboard");
+      } catch (_) {
+        window.prompt("Copy this link:", url);
+      }
     }
   };
 
@@ -252,56 +276,61 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
             </div>
           )}
 
-          {post.tags && post.tags.length > 0 && (
-            <div className="post-tags">
-              {post.tags.map((tag, idx) => (
-                <span key={idx} className="tag">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
-      <div className="post-stats">
-        <span className="stat">
-          <strong>{likeCount}</strong> Likes
-        </span>
-        <span className="stat">
-          <strong>{post.views || 0}</strong> Views
-        </span>
+      <div className="post-stats" role="group" aria-label="Post engagement">
+        <div className="post-stats-left">
+          <div className="reaction-stack" aria-hidden="true">
+            <span className="reaction-bubble reaction-bubble--heart" title="Reactions">
+              <span className="reaction-bubble-inner">❤️</span>
+            </span>
+            <span className="reaction-bubble reaction-bubble--like" title="Like">
+              <span className="reaction-bubble-inner">👍</span>
+            </span>
+          </div>
+          <span className="post-stats-like-count">{likeCount}</span>
+        </div>
+        <button
+          type="button"
+          className="post-stats-comments"
+          onClick={() => setShowComments((open) => !open)}
+        >
+          {commentDisplayCount}{" "}
+          {commentDisplayCount === 1 ? "comment" : "comments"}
+        </button>
       </div>
 
       <div className="post-footer">
         <button
           className={`btn-action ${isLiked ? "active" : ""}`}
           onClick={handleLike}
+          type="button"
         >
           👍 Like
         </button>
         <button
           className="btn-action"
-          onClick={() => setShowReactions(!showReactions)}
-        >
-          😊 React
-        </button>
-        <button
-          className="btn-action"
           onClick={() => setShowComments(!showComments)}
+          type="button"
         >
           💬 Comment
         </button>
         <button
           className={`btn-action ${isSaved ? "active" : ""}`}
           onClick={handleSave}
+          type="button"
         >
           🔖 Save
         </button>
-        
+        <button className="btn-action" onClick={handleShare} type="button">
+          📤 Share
+        </button>
+
         {isAuthor && (
           <>
             <button
+              type="button"
               className={`btn-action ${isEditing ? "active" : ""}`}
               onClick={() => setIsEditing(!isEditing)}
               title="Edit post"
@@ -309,6 +338,7 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
               ✎ Edit
             </button>
             <button
+              type="button"
               className="btn-action btn-delete"
               onClick={handleDelete}
               title="Delete post"
@@ -318,10 +348,6 @@ const PostCard = ({ post, onPostDeleted, onPostUpdated }) => {
           </>
         )}
       </div>
-
-      {showReactions && (
-        <ReactionPicker postId={postId} onReactionAdded={() => {}} />
-      )}
 
       {showComments && (
         <div className="comments-section">

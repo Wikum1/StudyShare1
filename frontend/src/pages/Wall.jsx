@@ -12,7 +12,6 @@ const Wall = () => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [selectedTag, setSelectedTag] = useState("");
 
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
@@ -22,7 +21,7 @@ const Wall = () => {
   // Fetch posts
   useEffect(() => {
     fetchPosts();
-  }, [page, sortBy, searchQuery, selectedTag]);
+  }, [page, sortBy, searchQuery]);
 
   const fetchPosts = async () => {
     try {
@@ -31,8 +30,7 @@ const Wall = () => {
         page,
         limit: 10,
         sortBy,
-        ...(searchQuery && { search: searchQuery }),
-        ...(selectedTag && { tag: selectedTag })
+        ...(searchQuery && { search: searchQuery })
       };
 
       const response = await axios.get(`${API_BASE}/posts`, { params });
@@ -65,11 +63,6 @@ const Wall = () => {
 
   return (
     <div className="wall-container">
-      <div className="wall-header">
-        <h1>StudyShare Wall</h1>
-        <p>Share knowledge, ask questions, and connect with peers</p>
-      </div>
-
       <div className="wall-controls">
         <div className="search-section">
           <input

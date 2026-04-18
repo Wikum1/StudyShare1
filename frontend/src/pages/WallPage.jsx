@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import "./WallPage.css";
 import WallSidebar from "../components/WallSidebar";
 import CreatePost from "../components/CreatePost";
@@ -14,9 +14,11 @@ const WallPage = () => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [showSavedPosts, setShowSavedPosts] = useState(false);
+  const [createPostPicker, setCreatePostPicker] = useState(null);
 
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const showSavedPosts = searchParams.get("saved") === "1";
   const API_BASE = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -42,6 +44,21 @@ const WallPage = () => {
       }, 300);
     }
   }, [location.state]);
+
+  // Scroll to post from shared link (#post-{id})
+  useEffect(() => {
+    if (loading) return;
+    const raw = window.location.hash?.replace(/^#/, "") || "";
+    if (!raw.startsWith("post-")) return;
+    const el = document.getElementById(raw);
+    if (!el) return;
+    const t = setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("highlight-post");
+      setTimeout(() => el.classList.remove("highlight-post"), 3000);
+    }, 150);
+    return () => clearTimeout(t);
+  }, [loading, posts]);
 
   const fetchPosts = async () => {
     try {
@@ -82,8 +99,17 @@ const WallPage = () => {
   const handlePostCreated = (newPost) => {
     setPosts([newPost, ...posts]);
     setShowCreatePost(false);
-    // Trigger sidebar refresh
-    setRefreshSidebar(prev => prev + 1);
+    setCreatePostPicker(null);
+  };
+
+  const openCreatePost = (intent = "compose") => {
+    setCreatePostPicker(intent);
+    setShowCreatePost(true);
+  };
+
+  const closeCreatePost = () => {
+    setShowCreatePost(false);
+    setCreatePostPicker(null);
   };
 
   const handlePostDeleted = (postId) => {
@@ -111,63 +137,135 @@ const WallPage = () => {
 
       {/* Main Feed */}
       <main className="wall-main">
-        <div className="wall-header">
-          <h1>{showSavedPosts ? "📌 Saved Posts" : "StudyShare Wall"}</h1>
-          <p>{showSavedPosts ? "Your bookmarked posts" : "Share knowledge, ask questions, and connect with peers"}</p>
-        </div>
-
         <div className="wall-controls">
           <div className="search-section">
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="search-input"
-            />
+            <div className="wall-search-shell">
+              <span className="wall-search-icon" aria-hidden="true">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15.803 15.803 21 21"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="search-input"
+                aria-label="Search posts"
+                autoComplete="off"
+              />
+            </div>
           </div>
 
+          {token && (
+            <div className="wall-composer-card">
+              <div className="wall-composer-top">
+                <div className="wall-composer-avatar" aria-hidden="true">
+                  {userData?.avatar ? (
+                    <img src={userData.avatar} alt="" />
+                  ) : (
+                    <span className="wall-composer-avatar-placeholder">
+                      {(userData?.name || "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="wall-composer-trigger"
+                  onClick={() => openCreatePost("compose")}
+                >
+                  What&apos;s on your mind?
+                </button>
+              </div>
+              <div className="wall-composer-divider" aria-hidden="true" />
+              <div className="wall-composer-actions">
+                <button
+                  type="button"
+                  className="wall-composer-action wall-composer-action--compose"
+                  onClick={() => openCreatePost("compose")}
+                >
+                  <span className="wall-composer-action-icon" aria-hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span>Compose</span>
+                </button>
+                <button
+                  type="button"
+                  className="wall-composer-action wall-composer-action--photo"
+                  onClick={() => openCreatePost("photo")}
+                >
+                  <span className="wall-composer-action-icon" aria-hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span>Photo</span>
+                </button>
+                <button
+                  type="button"
+                  className="wall-composer-action wall-composer-action--video"
+                  onClick={() => openCreatePost("video")}
+                >
+                  <span className="wall-composer-action-icon" aria-hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span>Video</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="filter-section">
-            <select 
-              value={sortBy} 
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                setPage(1);
-              }}
-              className="sort-select"
-            >
-              <option value="createdAt">Latest</option>
-              <option value="likeCount">Most Liked</option>
-            </select>
-
-            {token && (
-              <>
-                <button 
-                  className={`btn-create-post ${showSavedPosts ? 'secondary' : ''}`}
-                  onClick={() => {
-                    setShowSavedPosts(!showSavedPosts);
-                    setPage(1);
-                  }}
-                  title={showSavedPosts ? "Show all posts" : "Show saved posts"}
-                >
-                  🔖 {showSavedPosts ? "All Posts" : "Saved"}
-                </button>
-
-                <button 
-                  className="btn-create-post"
-                  onClick={() => setShowCreatePost(true)}
-                >
-                  + New Post
-                </button>
-              </>
-            )}
+            <div className="wall-filter-sort">
+              <span className="wall-sort-label">Sort</span>
+              <select
+                id="wall-sort-select"
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setPage(1);
+                }}
+                className="sort-select"
+              >
+                <option value="createdAt">Latest</option>
+                <option value="likeCount">Most Liked</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {showCreatePost && (
-          <CreatePost 
-            onClose={() => setShowCreatePost(false)}
+          <CreatePost
+            onClose={closeCreatePost}
             onPostCreated={handlePostCreated}
+            pickerIntent={
+              createPostPicker === "photo" || createPostPicker === "video"
+                ? createPostPicker
+                : null
+            }
           />
         )}
 
