@@ -15,6 +15,7 @@ const WallPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showSavedPosts, setShowSavedPosts] = useState(false);
+  const [refreshSidebar, setRefreshSidebar] = useState(0);
 
   const location = useLocation();
   const API_BASE = "http://localhost:5000/api";
@@ -107,6 +108,7 @@ const WallPage = () => {
         userData={userData}
         onPostUpdated={handlePostUpdated}
         onPostDeleted={handlePostDeleted}
+        refreshSidebar={refreshSidebar}
       />
 
       {/* Main Feed */}

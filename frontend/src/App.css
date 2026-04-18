@@ -10,11 +10,7 @@
   font-family: "Segoe UI", Roboto, sans-serif;
 }
 
-/* Background Gradient */
-body {
-  background: linear-gradient(135deg, #5967a4, #764ba2);
-  min-height: 100vh;
-}
+
 
 /* Main App Container */
 .App {

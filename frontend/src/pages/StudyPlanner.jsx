@@ -13,6 +13,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
 import TaskDetailsModal from "../components/TaskDetailsModal";
+import ProgressTracker from "../components/ProgressTracker";
 import reminderService from "../services/reminderService";
 
 import "./StudyPlanner.css";
@@ -453,6 +454,8 @@ export default function StudyPlanner() {
         status: task.status === "pending" ? "completed" : "pending",
       });
       await fetchPlans();
+      // Notify dashboard to refresh
+      window.dispatchEvent(new Event("taskUpdated"));
     } catch (err) {
       setError("Failed to update task: " + err.message);
       console.error(err);
@@ -527,6 +530,8 @@ export default function StudyPlanner() {
       if (planContainingTask) {
         await updateTask(planContainingTask._id, task._id, updateData);
         await fetchPlans();
+        // Notify dashboard to refresh
+        window.dispatchEvent(new Event("taskUpdated"));
       }
     } catch (err) {
       setError(
@@ -621,6 +626,14 @@ export default function StudyPlanner() {
                 : "📖 No plan selected"}
             </h2>
           </div>
+
+          {/* Progress Tracker Component */}
+          {selectedPlan && (
+            <ProgressTracker 
+              planId={selectedPlan._id}
+              authToken={localStorage.getItem("token")}
+            />
+          )}
 
           <div className="task-input-section">
             <label className="task-input-label">Add New Task</label>

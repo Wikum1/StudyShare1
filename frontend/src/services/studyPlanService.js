@@ -3,10 +3,10 @@ import axios from "axios";
 const API = "/api/study-plans";
 
 const getAuthConfig = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
   return {
     headers: {
-      Authorization: `Bearer ${user?.token}`,
+      Authorization: `Bearer ${token}`,
     },
   };
 };
