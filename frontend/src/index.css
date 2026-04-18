@@ -29,6 +29,13 @@ code {
     monospace;
 }
 
+/* LIGHT */
+body {
+  background: #f8fafc;
+  color: #111827;
+  transition: 0.3s;
+}
+
 /* DARK */
 body.dark {
   background-color: #0f172a;

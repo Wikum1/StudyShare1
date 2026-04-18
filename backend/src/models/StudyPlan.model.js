@@ -35,6 +35,34 @@ const studyPlanSchema = new mongoose.Schema(
         ref: "Task",
       },
     ],
+    dueDate: {
+      type: Date,
+      default: null,
+    },
+    milestones: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        description: {
+          type: String,
+          default: "",
+        },
+        targetDate: {
+          type: Date,
+          required: true,
+        },
+        completed: {
+          type: Boolean,
+          default: false,
+        },
+        completedDate: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );

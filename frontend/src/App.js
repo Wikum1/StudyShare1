@@ -37,6 +37,7 @@ import AdminStudents from "./pages/admin/AdminStudents";
 import AdminResources from "./pages/admin/AdminResources";
 import AdminActivities from "./pages/admin/AdminActivities";
 import AdminPosts from "./pages/admin/AdminPosts";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 /* ================= PUBLIC LAYOUT ================= */
 function PublicLayout() {
@@ -102,6 +103,7 @@ function App() {
           <Route path="resources" element={<AdminResources />} />
           <Route path="activities" element={<AdminActivities />} />
           <Route path="posts" element={<AdminPosts />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </Router>

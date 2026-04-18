@@ -15,16 +15,83 @@ import {
   ArrowUpRight,
   ArrowRight,
 } from "lucide-react";
+import { getPlans } from "../../services/studyPlanService";
+import StudyPlansOverview from "../../components/StudyPlansOverview";
 import "./DashboardHome.css";
 
 export default function DashboardHome() {
   const [greeting, setGreeting] = useState("Welcome");
+  const [stats, setStats] = useState({
+    totalResources: 0,
+    approvedFiles: 0,
+    studyPlans: 0,
+    pendingReviews: 0,
+    studyPlansProgress: 0,
+  });
 
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
     else if (hour < 18) setGreeting("Good afternoon");
     else setGreeting("Good evening");
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch study plans
+        const response = await getPlans();
+        
+        // Handle different response structures
+        let plans = [];
+        if (Array.isArray(response)) {
+          plans = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          plans = response.data;
+        } else if (response && Array.isArray(response)) {
+          plans = response;
+        }
+        
+        // Calculate study plans stats
+        let totalPlans = plans.length;
+        let completedPlansCount = 0;
+        
+        // Calculate overall progress across all plans
+        if (plans.length > 0) {
+          for (const plan of plans) {
+            if (plan.tasks && plan.tasks.length > 0) {
+              const completedTasks = plan.tasks.filter(t => t.status === "completed").length;
+              if (completedTasks === plan.tasks.length) {
+                completedPlansCount++;
+              }
+            }
+          }
+        }
+
+        const plansProgress = totalPlans > 0 
+          ? Math.round((completedPlansCount / totalPlans) * 100)
+          : 0;
+
+        // Update stats with dynamic data
+        setStats({
+          totalResources: 24, // Placeholder - fetch from backend if needed
+          approvedFiles: 18, // Placeholder
+          studyPlans: totalPlans,
+          pendingReviews: 6, // Placeholder
+          studyPlansProgress: plansProgress,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        // Set default stats on error
+        setStats(prev => ({
+          ...prev,
+          studyPlans: 0,
+          studyPlansProgress: 0,
+        }));
+      }
+    };
+
+    fetchStats();
   }, []);
 
   const capabilities = [
@@ -38,35 +105,36 @@ export default function DashboardHome() {
   const quickStats = [
     {
       title: "Uploaded Resources",
-      value: "24",
+      value: stats.totalResources.toString().padStart(2, "0"),
       note: "Notes, PDFs, videos",
       icon: <Files size={24} />,
       color: "indigo",
-      progress: "80%",
+      progress: `${Math.min(stats.totalResources * 3.33, 100)}%`,
     },
     {
       title: "Approved Files",
-      value: "18",
+      value: stats.approvedFiles.toString().padStart(2, "0"),
       note: "Visible to other students",
       icon: <CheckCircle size={24} />,
       color: "emerald",
-      progress: "65%",
+      progress: `${Math.min(stats.approvedFiles * 5.55, 100)}%`,
     },
     {
       title: "Study Plans",
-      value: "05",
+      value: stats.studyPlans.toString().padStart(2, "0"),
       note: "Active planner schedules",
       icon: <CalendarDays size={24} />,
       color: "violet",
-      progress: "40%",
+      progress: `${stats.studyPlansProgress}%`,
+      subtext: `${stats.studyPlansProgress}% Completed`,
     },
     {
       title: "Pending Reviews",
-      value: "06",
+      value: stats.pendingReviews.toString().padStart(2, "0"),
       note: "Waiting for approval",
       icon: <Clock size={24} />,
       color: "amber",
-      progress: "25%",
+      progress: `${Math.min(stats.pendingReviews * 4.16, 100)}%`,
     },
   ];
 
@@ -209,6 +277,10 @@ export default function DashboardHome() {
                   <h4>{stat.title}</h4>
                   <p>{stat.note}</p>
 
+                  {stat.subtext && (
+                    <div className="stat-subtext">{stat.subtext}</div>
+                  )}
+
                   <div className="stat-progress-track">
                     <div
                       className={`stat-progress-fill ${stat.color}`}
@@ -280,6 +352,9 @@ export default function DashboardHome() {
             ))}
           </div>
         </section>
+
+        {/* STUDY PLANS OVERVIEW */}
+        <StudyPlansOverview />
       </div>
     </div>
   );
