@@ -1,0 +1,389 @@
+/* ================= LUXURY FOOTER ================= */
+
+.lux-footer{
+  position:relative;
+  overflow:hidden;
+  padding:160px 20px 80px;
+  background:#000;
+  color:#e8e3d6;
+  text-align:center;
+}
+
+/* dotted overlay */
+
+.lux-footer::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(rgba(255,255,255,0.06) 1px,transparent 1px);
+  background-size:6px 6px;
+  opacity:.2;
+  pointer-events:none;
+}
+
+/* ================= CONTENT ================= */
+
+.lux-footer-content{
+  position:relative;
+  z-index:5;
+}
+
+.lux-kicker{
+  letter-spacing:2px;
+  font-size:11px;
+  opacity:.7;
+  margin-bottom:18px;
+}
+
+.lux-title{
+  font-family:"Playfair Display",serif;
+  font-size:58px;
+  font-weight:500;
+  line-height:1.15;
+  letter-spacing:-1px;
+  margin-bottom:60px;
+}
+
+/* ================= WATERMARK ================= */
+
+.lux-watermark{
+  position:absolute;
+  left:50%;
+  bottom:-20px;
+  transform:translateX(-50%);
+  font-size:clamp(120px,18vw,280px);
+  font-weight:700;
+  letter-spacing:-5px;
+  color:rgba(255,255,255,0.08);
+  pointer-events:none;
+  white-space:nowrap;
+}
+
+/* ================= ORBS ================= */
+
+.lux-orb{
+  position:absolute;
+  border-radius:999px;
+  filter:blur(50px);
+  opacity:.55;
+  animation:orbFloat 8s ease-in-out infinite;
+}
+
+.orb-1{
+  width:320px;
+  height:320px;
+  left:-120px;
+  top:70px;
+  background:rgba(76,175,80,.25);
+}
+
+.orb-2{
+  width:380px;
+  height:380px;
+  right:-140px;
+  top:140px;
+  background:rgba(102,126,234,.25);
+  animation-delay:1.5s;
+}
+
+.orb-3{
+  width:420px;
+  height:420px;
+  left:20%;
+  bottom:-220px;
+  background:rgba(255,255,255,.12);
+  animation-delay:2.5s;
+}
+
+@keyframes orbFloat{
+  0%{transform:translate(0,0)}
+  50%{transform:translate(20px,-18px)}
+  100%{transform:translate(-10px,12px)}
+}
+
+/* ================= SUBSCRIBE ================= */
+
+.lux-subscribe{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter:blur(10px);
+  box-shadow:0 18px 55px rgba(0,0,0,0.45);
+}
+
+.lux-subscribe input{
+  width:min(420px,55vw);
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.15);
+  outline:none;
+  color:#fff;
+  padding:14px 16px;
+  border-radius:12px;
+  font-size:14px;
+  transition:.35s ease;
+}
+
+.lux-subscribe input:focus{
+  border-color:rgba(76,175,80,.85);
+  box-shadow:
+  0 0 0 4px rgba(76,175,80,.14),
+  0 0 25px rgba(76,175,80,.25);
+}
+
+.lux-subscribe button{
+  padding:14px 18px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.12);
+  color:#f6f2e8;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.lux-subscribe button:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,0.18);
+}
+
+/* ================= LINKS ================= */
+
+.lux-meta{
+  margin-top:36px;
+  display:flex;
+  justify-content:center;
+  gap:26px;
+  flex-wrap:wrap;
+}
+
+.lux-links{
+  display:flex;
+  gap:26px;
+  font-size:12px;
+}
+
+.lux-links a{
+  color:rgba(255,255,255,0.55);
+  text-decoration:none;
+}
+
+.lux-links a:hover{
+  color:#fff;
+}
+
+/* ================= SOCIAL ================= */
+
+.lux-social{
+  display:flex;
+  gap:14px;
+}
+
+.lux-social a{
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  color:rgba(255,255,255,0.7);
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+}
+
+.lux-social a:hover{
+  color:#fff;
+  background:rgba(255,255,255,0.12);
+}
+
+/* ================= BOTTOM ================= */
+
+.lux-bottom{
+  margin-top:54px;
+  font-size:12px;
+  color:rgba(255,255,255,0.45);
+}
+
+.lux-bottom span{
+  color:rgba(255,255,255,0.7);
+}
+
+/* ================= LEFT MENU ================= */
+
+.lux-left-menu{
+  position:absolute;
+  left:60px;
+  top:120px;
+  z-index:20;
+}
+
+.lux-left-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.lux-left-link{
+  text-decoration:none;
+  color:rgba(255,255,255,0.6);
+  font-size:16px;
+  padding:10px 20px;
+  border-radius:14px;
+  transition:all .35s ease;
+}
+
+.lux-left-link:hover{
+  color:#fff;
+  transform:translateX(6px);
+}
+
+.lux-left-link.active{
+  color:white;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.25);
+  box-shadow:
+  0 0 25px rgba(255,255,255,0.25),
+  inset 0 0 15px rgba(255,255,255,0.1);
+}
+
+/* ================= CALENDAR ================= */
+
+.lux-calendar{
+  position:absolute;
+  right:60px;
+  top:80px;
+  width:260px;
+  padding:20px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+/* header */
+
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.calendar-header button{
+  background:rgba(255,255,255,0.1);
+  border:none;
+  color:white;
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.calendar-header button:hover{
+  background:rgba(255,255,255,0.25);
+}
+
+/* grid */
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-top:10px;
+}
+
+/* day */
+
+.day{
+  position:relative;
+  text-align:center;
+  padding:8px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.06);
+  cursor:pointer;
+  transition:.25s;
+}
+
+.day:hover{
+  background:rgba(255,255,255,0.15);
+}
+
+/* selected */
+
+.active-day{
+  background:rgba(120,170,255,0.45);
+  box-shadow:0 0 12px rgba(120,170,255,0.9);
+  color:white;
+}
+
+/* today */
+
+.today{
+  border:1px solid rgba(120,170,255,0.9);
+}
+
+/* event dot */
+
+.event-dot{
+  position:absolute;
+  bottom:4px;
+  left:50%;
+  transform:translateX(-50%);
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#4CAF50;
+}
+
+/* event list */
+
+.calendar-events{
+  margin-top:10px;
+  font-size:12px;
+  opacity:.8;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:768px){
+
+.lux-title{
+  font-size:34px;
+}
+
+.lux-left-menu{
+  display:none;
+}
+
+.lux-calendar{
+  display:none;
+}
+
+.lux-subscribe{
+  flex-direction:column;
+  width:100%;
+  max-width:420px;
+  margin:auto;
+}
+
+.lux-subscribe input{
+  width:100%;
+}
+
+}
+
+/* Logo above footer text */
+
+.lux-logo{
+margin-bottom:-22px;
+}
+
+.lux-logo img{
+width:160px;
+opacity:0.8;
+filter:drop-shadow(0 0 10px rgba(120,255,120,0.6));
+}
