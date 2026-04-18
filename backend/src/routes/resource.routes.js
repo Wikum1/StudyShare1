@@ -2,18 +2,17 @@ const express = require("express");
 const router = express.Router();
 
 const { uploadMiddleware } = require("../middleware/upload.middleware");
+const { protect } = require("../middleware/auth.middleware");
 const controller = require("../controllers/resource.controller");
 
-/* ================= RESOURCE ROUTES ================= */
-
 /* Upload resource */
-router.post("/", uploadMiddleware, controller.createResource);
+router.post("/", protect, uploadMiddleware, controller.createResource);
 
 /* Get user resources */
-router.get("/my", controller.getMyResources);
+router.get("/my", protect, controller.getMyResources);
 
-/* Optional future routes */
-router.get("/:id", controller.getResourceById);
-router.delete("/:id", controller.deleteResource);
+/* Optional routes */
+router.get("/:id", protect, controller.getResourceById);
+router.delete("/:id", protect, controller.deleteResource);
 
 module.exports = router;

@@ -15,6 +15,8 @@ const postRoutes = require("./routes/post.routes");
 const reactionRoutes = require("./routes/reaction.routes");
 const userRoutes = require("./routes/user.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const chatbotRoutes = require("./routes/chatbotRoutes");
+const knowledgeRoutes = require("./routes/knowledgeRoutes");
 const reminderScheduler = require("./services/reminderScheduler");
 
 const app = express();
@@ -22,49 +24,62 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DEBUG: Log all incoming requests
+/* DEBUG: Log all incoming requests */
 app.use((req, res, next) => {
   console.log(`\n📡 ${req.method} ${req.path}`);
   console.log(`   URL: ${req.originalUrl}`);
   console.log(`   Body:`, req.body || "none");
-  console.log(`   Headers:`, { authorization: req.headers.authorization ? "Bearer..." : "none" });
+  console.log(`   Headers:`, {
+    authorization: req.headers.authorization ? "Bearer..." : "none",
+  });
   next();
 });
 
 /* serve uploaded files */
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// MongoDB connection
+/* MongoDB connection */
 mongoose
   .connect(
     "mongodb+srv://student1:8g81fbYGlA0mndvi@cluster0.ux2zfme.mongodb.net/?appName=Cluster0"
   )
   .then(() => {
     console.log("MongoDB Connected");
-    // Initialize reminder scheduler after DB connection
     reminderScheduler.initialize();
   })
   .catch((err) => console.log(err));
 
-// Routes
+/* Routes */
 app.use("/api/resources", resourceRoutes);
 app.use("/api/admin/resources", adminResourceRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/contact", contactRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/study-plans", studyPlanRoutes); // ✅ includes nested task routes
-app.use("/api/reminders", reminderRoutes); // ✅ reminder notifications
-app.use("/api/posts", postRoutes); // ✅ Wall feature - posts
-app.use("/api/reactions", reactionRoutes); // ✅ Wall feature - emoji reactions
-app.use("/api/users", userRoutes); // ✅ User profiles and follow system
-app.use("/api/notifications", notificationRoutes); // ✅ Like and comment notifications
+app.use("/api/study-plans", studyPlanRoutes);
+app.use("/api/reminders", reminderRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/reactions", reactionRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
 
-// Catch-all 404 handler
+/* Chatbot + Knowledge routes */
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/knowledge", knowledgeRoutes);
+
+/* Health check */
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+  });
+});
+
+/* Catch-all 404 handler */
 app.use((req, res) => {
   console.error(`❌ 404 NOT FOUND: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
-    message: `Cannot ${req.method} ${req.originalUrl}`
+    message: `Cannot ${req.method} ${req.originalUrl}`,
   });
 });
 

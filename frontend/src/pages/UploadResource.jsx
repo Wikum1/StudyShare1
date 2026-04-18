@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import resourceService from "../services/resource.service";
 import "./UploadResource.css";
 
 export default function UploadResource() {
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -18,9 +20,15 @@ export default function UploadResource() {
     const { name, value, files } = e.target;
 
     if (name === "file") {
-      setFormData({ ...formData, file: files[0] });
+      setFormData((prev) => ({
+        ...prev,
+        file: files && files[0] ? files[0] : null
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -33,6 +41,15 @@ export default function UploadResource() {
       return;
     }
 
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      setError("Please login first.");
+      navigate("/login");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -42,7 +59,7 @@ export default function UploadResource() {
       data.append("subject", formData.subject);
       data.append("file", formData.file);
 
-      await resourceService.uploadResource(data);
+      await resourceService.uploadResource(data, token);
 
       alert("Resource uploaded successfully!");
 
@@ -52,10 +69,9 @@ export default function UploadResource() {
         subject: "",
         file: null
       });
-
     } catch (err) {
       console.error(err);
-     setError(err.response?.data?.message || err.message || "Upload failed");
+      setError(err.response?.data?.message || err.message || "Upload failed");
     } finally {
       setLoading(false);
     }
@@ -63,9 +79,7 @@ export default function UploadResource() {
 
   return (
     <div className="upload-page">
-
       <div className="upload-card">
-
         <h2 className="upload-title">📤 Upload Study Resource</h2>
         <p className="upload-subtitle">
           Share notes, assignments, and tutorials with other students.
@@ -74,7 +88,6 @@ export default function UploadResource() {
         {error && <div className="upload-error">{error}</div>}
 
         <form className="upload-form" onSubmit={handleSubmit}>
-
           <div className="form-group">
             <label>Title</label>
             <input
@@ -124,10 +137,8 @@ export default function UploadResource() {
           <button className="upload-btn" type="submit" disabled={loading}>
             {loading ? "Uploading..." : "Upload Resource"}
           </button>
-
         </form>
       </div>
-
     </div>
   );
 }
